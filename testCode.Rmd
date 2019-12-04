@@ -1,0 +1,85 @@
+---
+title: "Test Code"
+author: "Chinyere Brown"
+date: "12/3/2019"
+output: html_document
+---
+
+```{r setup, eval=TRUE, echo=TRUE}
+library(tidyverse)
+library(ggplot2)
+```
+
+filepath/web address of data. specify data type if not zip. various data manipulation options (reshape and join data, rename/create variables, )  
+  
+### Websites  
+North Carolina State Board of Elections voter registration and voter history data may be found with the following links:  
+https://www.ncsbe.gov/Public-Records-Data-Info/Election-Results-Data#CurrentVoterRegistrationVoterHistoryDatabyCounty  
+or  
+https://dl.ncsbe.gov/?prefix=data/  
+```{r getData, eval=TRUE, echo=TRUE}
+# voting history
+https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvhis48.zip
+or
+
+# voter registration record
+https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvoter48.zip
+or
+http://dl.ncsbe.gov/data/ncvoter48.zip
+
+
+temp <- tempfile()
+download.file("https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvoter48.zip",temp)
+voterRec<- read_tsv(unz(temp, "ncvoter48.txt"))
+unlink(temp)
+
+temp <- tempfile()
+download.file("https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvhis48.zip",temp)
+voterHist<- read_tsv(unz(temp, "ncvhis48.txt"))
+unlink(temp)
+
+voterHist1 <- mutate(voterHist, newValue = paste(voterHist[, 6], voterHist[, 7], voterHist[, 8], voterHist[, 9], voterHist[, 10], voterHist[, 11], voterHist[, 12], voterHist[, 13], voterHist[, 14], voterHist[, 15], sep = "|"))
+
+voterHist1 <- mutate(voterHist, electionDate = as.Date(election_desc, "%m/%d/%Y"))
+
+voterHist1 <- arrange(voterHist1, electionDate)
+
+#extract duplicated rows for review...edit/rename/combine rows as needed
+dups <- voterHist1[duplicated(voterHist1[, 1:4])|duplicated(voterHist1[, 1:4], fromLast=TRUE),]
+
+
+voterHist1 <- select(voterHist1, -c(4, 6:16))
+
+voterHist2 <- spread(voterHist1, election_desc, newValue, fill = NA, convert = FALSE)
+```
+
+selections of various (combinations of?) geographoc, demographic, and other filters.
+```{r setFilters, eval=TRUE, echo=TRUE}
+
+```
+
+Can select what election dates to include (All vs. general elections only, vs. non-general elections only). Predictions will be based on filters and date options selected
+```{r setDates, eval=TRUE, echo=TRUE}
+
+```
+
+??? coloring for graphs?
+```{r setAes, eval=TRUE, echo=TRUE}
+
+```
+
+Summary (e.g., contingency) and raw/subset data tables
+```{r allTables, eval=TRUE, echo=TRUE}
+
+```
+
+Plots, graphs and charts. Includes options (as appropriate) for bar/pie & line, percentage/counts, data coloring, limited graph layout/color options
+```{r graphs, eval=TRUE, echo=TRUE}
+
+```
+
+visualizations related to data modeling (biplots, other...)
+```{r modelviz, eval=TRUE, echo=TRUE}
+
+```
+
