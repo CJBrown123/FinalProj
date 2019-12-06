@@ -1,0 +1,165 @@
+---
+title: "Test Code"
+author: "Chinyere Brown"
+date: "12/3/2019"
+output: html_document
+---
+
+```{r setup, eval=TRUE, echo=TRUE}
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+```
+
+filepath/web address of data. specify data type if not zip. various data manipulation options (reshape and join data, rename/create variables, )  
+  
+### Websites  
+Mecklenburg County:
+https://www.mecknc.gov/BOE/data/Pages/VoterDataFileDetails.aspx  
+  
+data file referenced directly at:  
+http://apps.meckboe.org/pages/Download/VoterDataFile.zip  
+  
+North Carolina State Board of Elections voter registration and voter history data may be found with the following links:  
+https://www.ncsbe.gov/Public-Records-Data-Info/Election-Results-Data#CurrentVoterRegistrationVoterHistoryDatabyCounty  
+or  
+https://dl.ncsbe.gov/?prefix=data/  
+
+# voting history
+https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvhis48.zip
+or
+http://dl.ncsbe.gov/data/ncvhis48.zip
+
+# voter registration record
+https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvoter48.zip
+or
+http://dl.ncsbe.gov/data/ncvoter48.zip
+
+
+```{r getStateData, eval=TRUE, echo=TRUE}
+temp <- tempfile()
+download.file("https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvoter48.zip",temp)
+voterRec<- read_tsv(unz(temp, "ncvoter48.txt"))
+unlink(temp)
+
+temp <- tempfile()
+download.file("https://s3.amazonaws.com/dl.ncsbe.gov/data/ncvhis48.zip",temp)
+voterHist<- read_tsv(unz(temp, "ncvhis48.txt"))
+unlink(temp)
+
+voterHist1 <- as_tibble(voterHist)
+
+voterHist1 <- voterHist1 %>% mutate(newValue = paste(voting_method, voted_party_cd, voted_party_desc, pct_label, pct_description, ncid, voted_county_id, voted_county_desc, vtd_label, vtd_description, sep = "|"))
+
+voterHist1 <- mutate(voterHist, electionDate = as.Date(election_desc, "%m/%d/%Y"))
+
+voterHist1 <- arrange(voterHist1, electionDate)
+
+#extract duplicated rows for review...edit/rename/combine rows as needed
+dups <- voterHist1[duplicated(voterHist1[, 1:4])|duplicated(voterHist1[, 1:4], fromLast=TRUE),]
+
+voterHist1 <- select(voterHist1, -c(4, 7:16))
+
+voterHist2 <- spread(voterHist1, election_desc, newValue, fill = NA, convert = FALSE)
+```
+
+```{r getCountyData}
+temp <- tempfile()
+download.file("http://apps.meckboe.org/pages/Download/VoterDataFile.zip",temp)
+voterMeckCo <- read_csv(unz(temp, "voterdatafile.txt"))
+voterMeckCo <- read_csv(unz(temp, "voterdatafile.txt"),
+
+#voterMeckCo <- read_csv(unz("C:/Users/Valued User/Documents/CJ Class/FinalProj/VoterDataFile.zip","voterdatafile.txt"),
+         col_types = cols(.default = "c", 
+                          age = "d", 
+                          registr_dt = "?"))
+unlink(temp)
+
+# File is very large, so for this assignment I reduced the original population of data down to a random sample of 10,000 records.
+set.seed(9)
+voterMeckCo <- sample_n(voterMeckCo, 10000)
+
+voterMeckCo <- as_tibble(voterMeckCo)
+voterMeckCo <-  voterMeckCo %>% mutate(row = row_number())
+
+# View parsing errors
+parseProb <- problems(voterMeckCo)
+parseProb <- as_tibble(parseProb)
+probRows <- unlist(as.list(distinct(parseProb, row)))
+
+# Filter out rows with parsing errors 
+voterMeck <- voterMeckCo %>% filter(!(row %in% probRows))
+
+# Change class of date columns as appropriate:
+dateCols1 <- voterMeck[, grepl("date", names(voterMeck))]
+dateCols2 <- voterMeck[, grepl("Date", names(voterMeck))]
+dates <- c(c(names(dateCols1)), c(names(dateCols2)))
+
+voterMeck[,dates] = apply(voterMeck[,dates], 2, function(x) as.POSIXlt(x, format = "%m/%d/%Y"))
+
+#voterMeck[,dates] = apply(voterMeck[,dates], 2, function(x) as_date(x))
+
+#voterMeck[,dates] = apply(voterMeck[,dates], 2, function(x) as.date(x, format = "%m/%d/%Y"))
+
+
+# Change class of columns to factors as appropriate:
+factCols <- c("precinct_desc", "race_code", "ethnic_code", "sex_code", "res_city_desc", "zip_code", "status_cd", "municipality_desc", "ward_desc", "county_commiss_desc", "school_dist_desc")
+
+#voterMeck[,factCols] = apply(voterMeck[,factCols], 2, function(x) as.factor(x))
+voterMeck$precinct_desc <- as.factor(voterMeck$precinct_desc)
+voterMeck$race_code <- as.factor(voterMeck$race_code)
+voterMeck$ethnic_code <- as.factor(voterMeck$ethnic_code)
+voterMeck$sex_code <- as.factor(voterMeck$sex_code)
+voterMeck$res_city_desc <- as.factor(voterMeck$res_city_desc)
+voterMeck$zip_code <- as.factor(voterMeck$zip_code)
+voterMeck$status_cd <- as.factor(voterMeck$status_cd)
+voterMeck$municipality_desc <- as.factor(voterMeck$municipality_desc)
+voterMeck$ward_desc <- as.factor(voterMeck$ward_desc)
+voterMeck$county_commiss_desc <- as.factor(voterMeck$county_commiss_desc)
+voterMeck$school_dist_desc <- as.factor(voterMeck$school_dist_desc)
+
+#apply(voterMeck[,factCols], 2, function(x) print(levels(voterMeck[, x])))
+
+............................................
+print(levels(voterMeck$race_code))
+print(levels(voterMeck$ethnic_code))
+print(levels(voterMeck$sex_code))
+print(levels(voterMeck$res_city_desc))
+print(levels(voterMeck$zip_code))
+print(levels(voterMeck$status_cd))
+print(levels(voterMeck$municipality_desc))
+print(levels(voterMeck$ward_desc))
+print(levels(voterMeck$county_commiss_desc))
+print(levels(voterMeck$school_dist_desc))
+```
+
+selections of various (combinations of?) geographoc, demographic, and other filters.
+```{r setFilters, eval=TRUE, echo=TRUE}
+
+```
+
+Can select what election dates to include (All vs. general elections only, vs. non-general elections only). Predictions will be based on filters and date options selected
+```{r setDates, eval=TRUE, echo=TRUE}
+
+```
+
+??? coloring for graphs?
+```{r setAes, eval=TRUE, echo=TRUE}
+
+```
+
+Summary (e.g., contingency) and raw/subset data tables
+```{r allTables, eval=TRUE, echo=TRUE}
+
+```
+
+Plots, graphs and charts. Includes options (as appropriate) for bar/pie & line, percentage/counts, data coloring, limited graph layout/color options
+```{r graphs, eval=TRUE, echo=TRUE}
+
+```
+
+visualizations related to data modeling (biplots, other...)
+```{r modelviz, eval=TRUE, echo=TRUE}
+
+```
+
