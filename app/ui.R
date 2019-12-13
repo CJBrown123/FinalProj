@@ -37,7 +37,7 @@ dashboardPage(skin="blue",
         # First tab content
         tabItem(tabName = "aboutApp",
                 fluidRow(
-                  tags$head(tags$style(strong("a {color: yellow}"))),
+                  tags$head(tags$style(HTML("a {color: yellow}"))),
                   #two columns for each of the two items
                   column(6,
                          #Description of App
@@ -50,25 +50,42 @@ dashboardPage(skin="blue",
                              h4("In this section, you may perform exploratory analysis on single variables and in combinations of variables. Options for both categorical and quantitative variables are available. The user has the ability to select combinations of up to 3 variables to generate the following outputs:"),
                              br(),
                              h4(strong("Options for Categorical Variables")),
-                             h4("    - bar plot (up to 3 variables"),
-                             h4("    - bar plot by series (up to 2 variables"),
-                             h4("    - frequency/contingency table(up to 3 variables"),
-                             br(),
+                             HTML("
+                               <ul>
+                                 <li> bar plot (up to 3 variables)</li>
+                                 <li> bar plot by series (up to 2 variables)</li>
+                                 <li> frequency/contingency table(up to 3 variables)</li>
+                               </ul>
+                             "),
                              h4(strong("Options for Quantitative Variables")),
-                             h4("    histogram (up to 3 variables"),
-                             h4("    scatter plot by series (up to 2 variables"),
-                             h4("    - frequency/contingency table(up to 3 variables"),
+                             HTML("
+                               <ul>
+                                 <li> histogram (up to 3 variables)</li>
+                                 <li> scatter plot by series (up to 2 variables</li>
+                                 <li> frequency/contingency table(up to 3 variables)</li>
+                               </ul>
+                             "),
                              br(),
                              
                              h3(strong("Investigate")), 
                              h4("In this section, you may conduct additional unsupervised analyses including hierarchical clustering and principla components analysis:"),
                              br(),
+                             
                              h4(strong("Hierarchical Clustering")),
-                             h4("Outputs a dendogram of results"),
-                             h4(strong("Principal Components Analysis")),
-                             h4("Outputs include paired plots of variables, a biplot and a screeplot of results"),
+                             HTML("
+                               <ul>
+                                 <li> Outputs a dendogram of results</li>
+                               </ul>
+                             "),
                              br(),
                              
+                             h4(strong("Principal Components Analysis")),
+                             HTML("
+                               <ul>
+                                 <li> Outputs include paired plots of variables, a biplot and a cumulative scree plot of results.</li>
+                               </ul>
+                             "),
+                             br(),
                              h3(strong("Model")), 
                              h4("This section, allows you to conduct supervised analyses including logistic regression and random forest analyses:"),
                              br(),
@@ -84,7 +101,7 @@ dashboardPage(skin="blue",
                          h2("How do I use this app?"),
                          #box to contain description
                          box(background="blue",width=12,
-                             h4("To use this app, start by entering in the side panel any changes to defaule general criteria options to be applied to the data. Options include the ability to select for the registration status of voters, and specify election dates to include in the data. I recommend using the default options for voter status (to include only active voters)"),
+                             h4("To use this app, start by entering in the side panel any changes to defaule general criteria options to be applied to the data. Options include the ability to select for the registration status of voters, and specify election dates to include in the data. I recommend using the default options for voter status (to include only active voters)."),
                              h4("Once any general options have been selected, variables selection options are available within each analysis menu's pages and tabs. Analysis are grouped by number of variables and the data type of variables to be analyzed; the user has options to select from available variables."),
                          )
                 )
@@ -116,6 +133,16 @@ dashboardPage(skin="blue",
                   h4("Data fields included in the file used by this application are shown in the table below."),
                   br(),
                   tableOutput("definitions"),
+                  h5("*Variables categorized under strong(Voter History) repeat for each election date"),
+                  br(),
+                  h5(strong("Methods by which a voter may cast their ballot:")),
+                  h5("    * C - Curbside"),
+                  h5("    * M - Mail"),
+                  h5("    * O - One Stop Early Voting"),
+                  h5("    * P - Provisional Ballot"),
+                  h5("    * T - Transfer"),
+                  h5("    * U - One Stop Early Voting Curbside"),
+                  h5("    * V - In-Person Election Day"),
                   br(),
                   h3("Other Notes On Data"),
                   h4("The Mecklenburg County voter data file consists of oover 700,000 records and includes both active and inactive voters.  (Due to this massive size, the app includes an option to select for  sample of records prior to conducting analysis.) Although he registration date is included in the voter file, there is no information provided regarding voter eligibility during the report period; information on date a voter became inactive is unavailable. It is recommended that analysis be conducted on voters shown as having an ACTIVE voter status (this option is selected by default)."),
