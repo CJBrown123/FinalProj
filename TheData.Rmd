@@ -1,0 +1,115 @@
+About this App (application)
+About Our Data (icon=question-square)
+Summarize (barchart)
+Explore (search)
+Model (line-graph)
+
+Key Criteria
+(icon=table)(icon = database)
+
+The data used by this application consists of voter registration data and voting history for Mecklenburg County for the most recent 20 major elections as of the file creation date; elections dates covered by the data range from May, 8, 2012 to October 8, 2019. For a listing of previous elections please check this County Website (https://www.mecknc.gov/BOE/data/Pages/PreviousElectionResults.aspx)  
+
+This data was obtained directly from the Mecklenburg County Board of Elections website (https://www.mecknc.gov/BOE/data/Pages/VoterDataFileDetails.aspx) but similar data for all North Carolina Counties may be obtained directly from the North Carolina State Board of Elections website here (https://www.ncsbe.gov/Public-Records-Data-Info/Election-Results-Data#VoterRegistrationData) and here (https://dl.ncsbe.gov/index.html?prefix=data/). Although the data obtained from the Mecklenburg County website is a single file summarizing all data, the State's reports are divided into two seperate files for the voter registration record and voter activity history. 
+
+Data fields included in the file used bu this application are shown in the table below.
+
+
+
+[INSERT DATA TABLES]
+
+
+Other Notes On Data
+The Mecklenburg County voter data file consists of oover 700,000 records and includes both active and inactive voters.  (Due to this massive size, the app includes an option to select for  sample of records prior to conducting analysis.) Although he registration date is included in the voter file, there is no information provided regarding voter eligibility during the report period; information on date a voter became inactive is unavailable. It is recommended that analysis be conducted on voters shown as having an ACTIVE voter status (this option is selected by default).
+
+When filtering data for analysis and creation of models, keep in mind that voting habits may differ significantly from presidential to non-presidential years and further variations may occur for odd-year elections if there are no major political races/issues on the ballot.
+
+Voters' current age as of the date of file generation is included in the data, but not the birthdate; analysis based on age are approximated based on a presumed January 1 birthdate. 
+
+Consideration should also be given to other confounding factors not captured within the data that may imact voter participations; examples include changes to early voting options over time, income and education of individual, when an individual moved to the County (or otherwise first became eligible to vote), and undelying changes to the overall demographic makeup of the County population over time.
+
+For additional information related to Mecklenburg County and North Carolina election processes, please visit the following sites:  
+  
+https://www.mecknc.gov/BOE/Pages/default.aspx (Mecklenburg County Board of Elections)  
+https://www.ncsbe.gov/ERC (North Carolina State Board of Elections)  
+
+
+
+
+
+
+
+
+
+
+
+
+#Website hyperlinks
+[this website](https://lemire.me/blog/2017/11/10/should-computer-scientists-keep-the-lena-picture/).  
+  
+
+#Bulleted Lists
+* Carole Hersee  
+* Lorem ipsum  
+    + filler text  
+    + useful for templates  
+
+# non-interaactive table
+knitr::kable(averages[1:1, ], align = "r")
+
+#create data frame
+newdf = data.frame(col1 = val1, col2 = val2)
+
+#specify rounding
+round(x, <#decimals>
+
+#manipulating data (filter, select, mutate...CHAINING!)
+Pitching4 <- (Pitching %>% select(ends_with("ID"),  W, L, ERA) %>% 
+                filter(yearID >= 2010 & yearID <= 2015) %>% 
+                mutate(`W/L%` = round(((W/(W+L))*100), 0))) %>% 
+              print(Pitching4)
+#resort a table
+Pitching5 <- (Pitching %>% arrange(desc(`W/L%`))) %>% print(Pitching5)
+
+# computed means for each (excluding missing values); grouped the data by team and year before summarizing
+Pitching6 <- (Pitching %>% group_by(teamID, yearID) %>%
+                           summarise(avgERA = mean(ERA, na.rm = TRUE))
+                	) %>% print(Pitching6)
+
+#changed on of the tibble.print options to allow for all rows in the dataset to appear when the object is called.
+options(tibble.print_min = Inf)
+
+#Read Excel Data
+sheepData <- read_excel("C:\\Users\\Valued User\\Documents\\CJ Class\\Week05\\Chickens.xlsx",
+sheet = 2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

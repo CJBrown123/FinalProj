@@ -1,0 +1,112 @@
+This app allows the user to analyze Mecklenburg County voter data for current voter registration information and for voter history over the ladt 20 major elections.  Menu options and their capabilities to be found within each option are described below.  
+  
+About Our Data  
+See this tab for more information about the data.  
+  
+Summarize  (Exploration)
+In this section, you may perform exploratory analysis on single variables and combinations of variables. Options for both categorical and quantitative variables are available. The user has the ability to select combinations of up to XX variables to generate the following outputs:  
+  
+* Categorical  
+  - bar plot (up to three variables)  
+  - bar plot by series (up to two variables)  
+  - frequency/contingency tables --> same function : table()
+  
+* Quantitative
+  - histogram (up to three variables)  
+  - scatter plot by series (up to two variables)  
+  - ggpairs
+  
+Explore  (Unsupervised learning - additional Exploration including clustering and biplots and principal components analysis...also)
+ - goal is to learn about patterns and relationships in the data
+
+Hierarchical cluster (slide 11/14 = linkage options; complete linkage pg 12...Specify dissimilarity measure "complete"?)
+hierClust <- hclust(dist(data.frame(iris$Sepal.Length, iris$Sepal.Width)))
+plot(hierClust, xlab = "")
+
+principal components - copy recap slide 20, details slides 16-17 (MATHJAX!!!!)
+principal components
+bi plot
+	pairs plots...
+	subCountyData <- select(countyData, pop.change:age75, income, white, black) %>%
+		`[`(rowSums(is.na(.)) == 0, )
+	pairs(subCountyData, cex = 0.4) #numeric vars only, remove nas
+PCs <- prcomp(select(countyData, income, crime) , scale = TRUE)
+ biplot(PCs, xlabs = rep(".", nrow(countyData)), cex = 1.2)
+
+PCs <- prcomp(subCountyData, center = TRUE, scale = TRUE)
+screeplot
+plot(cumsum(PCs$sdev^2/sum(PCs$sdev^2)), xlab = "Principal Component",
+ylab = "Cum. Prop of Variance Explained", ylim = c(0, 1), type = 'b')
+biplot(PCs, xlabs = subRegionData$region, cex = 1, xlim = c(-0.08, 0.08))
+biplot(PCs, xlabs = subRegionData$region, choices = c(1,3), cex = 0.8,
+	xlim = c(-0.08, 0.1), ylim = c(-0.07, 0.1))
+biplot(PCs, xlabs = subRegionData$region, choices = 2:3, cex = 0.8,
+	xlim = c(-0.08, 0.1), ylim = c(-0.07, 0.07))
+
+Model (Supervised learning/prediction)
+liner regression (general linear model - continuous response/generalized liner model - non-normal dist.such as poisson/binary... cat or quant input vars for both!,  multiple linear model)
+logit regression
+
+logistic - success/fail (quant. predictor)
+Summarize made vs not made kicks
+table(FGData$good, FGData$yards)
+
+
+good
+distSum <- FGData %>% group_by(yards) %>% summarize(propGood = mean(good))
+ggplot(distSum, aes(x = yards, y = propGood)) + geom_point(stat = "identity")
+
+better
+distSum <- FGData %>% group_by(yards) %>% summarize(propGood = mean(good), n = n())
+ggplot(distSum, aes(x = yards, y = propGood, size = n)) + geom_point(stat = "identity")
+
+best
+ggplot(distSum, aes(x = yards, y = propGood)) + geom_point(stat = "identity", aes(size = n)) +
+geom_smooth(data = FGData, aes(x = yards, y = good), method = "lm")
+
+use this for prediction (classification here) purposes:
+betas <- coef(lm(good ~ yards, data = FGData))
+betas
+## (Intercept) yards
+## 1.30174041 -0.01337391
+
+uniroot(function(x){betas[1] + betas[2] * x - 0.5}, lower = 15, upper = 65)$root
+## [1] 59.94807
+If above 59.9480717 predict a miss (pg 15)
+
+
+
+
+
+
+
+
+logistic regression  - yes/no (cat*quant predictor)
+--> predict likelihood of individual (registered only?) participating in general election...any election  --> likelihood of  person being regitered to vote.
+ - comibinations of 2 variables only? (Ex: age group & race, gender & partycode
+ - look at principal components analysis first to see what items explain particiption most.... (age, race, gender, party, 
+  Fit a logistic regression model with age, treatment, and their interaction and provide the summary of the model fit.
+neuData$PainInd <- ifelse(neuData$Pain == "No", 0, 1)
+glmFit <- glm(PainInd ~ Age*Treatment, data = neuData, family = "binomial")
+summary(glmFit)
+
+Call:
+## glm(formula = PainInd ~ Age * Treatment, family = "binomial",
+## data = neuData)
+
+Provide a plot of the model fit (hint there is a nice pacakge for this we looked at).
+ggiraphExtra::ggPredict(glmFit)
+Use the model to provide estimated pain probabilities for an age of 70 and a treatment of “A”, and an age of 70 treatment of “B”.
+predict(glmFit, newdata = data.frame(Age = c(70, 70), Treatment = c("A", "B")), type = "response")
+
+Use the model to provide estimated odds of pain for someone that has an age of 70 and a treatment of “A”.
+exp(predict(glmFit, newdata = data.frame(Age = 70, Treatment = "A"), type = "link"))
+
+
+
+ kNN
+classification tree
+ 
+  
+Key Criteria  
+In addition to option available within each menu's options, the user may also specify key election criteria (such as voter status and election dates to perform analyses on) in the side panel.
