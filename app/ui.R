@@ -11,10 +11,13 @@ dashboardPage(skin="blue",
   
     #define sidebar items
     dashboardSidebar(sidebarMenu(
-          menuItem("About", tabName = "about", icon = icon("archive")),
-          menuItem("Explore", tabName = "explore", icon = icon("archive")),
+          menuItem("About the App", tabName = "aboutApp", icon = icon("archive")),
+          menuItem("About the Data", tabName = "aboutData", icon = icon("question-circle")),
+          menuItem("Explore", tabName = "explore", icon = icon("chart-bar")),
           menuItem("Investigate", tabName = "investigate", icon = icon("search")),
-          menuItem("Predict", tabName = "app", icon = icon("chart-line")),
+          menuItem("Model", tabName = "model", icon = icon("chart-line")),
+          menuItem("Data", tabName = "data", icon = icon("table")),
+          
           br(),
           h4("Voter Data Reporting Criteria"),
           checkboxInput("City", h5("Charlotte Residents Only", style = "color:yellow;")),
@@ -23,11 +26,7 @@ dashboardPage(skin="blue",
                 br(),
           br(),
           h4("Election Dates"),
-#                checkboxInput("elecDates", h5("Specify Election Dates", style = "color:black;")),
-                    # Add conditional checkbox panel input for changing opacity of points based on sleep_rem value
-#                    conditionalPanel(condition = "input.elecDates",
                                      checkboxGroupInput("pickDates","Select election dates for analysis:", elecList),
-#                                     actionLink("selectall","Select All")),
           br()
       )),
               
@@ -36,144 +35,293 @@ dashboardPage(skin="blue",
     dashboardBody(
       tabItems(
         # First tab content
-        tabItem(tabName = "about",
+        tabItem(tabName = "aboutApp",
                 fluidRow(
-                  #add in latex functionality if needed: \ for inline and $$ for separate line...
-                  withMathJax(),
-                  helpText('An irrational number \\(\\sqrt{2}\\)
-           and a fraction $$1-\\frac{1}{2}$$'),
-                  helpText('and a fact about \\(\\pi\\):
-           $$\\frac2\\pi = \\frac{\\sqrt2}2 \\cdot
-           \\frac{\\sqrt{2+\\sqrt2}}2 \\cdot
-           \\frac{\\sqrt{2+\\sqrt{2+\\sqrt2}}}2 \\cdots$$'),
-#                  helpText('and output 2 $$3^2+4^2=5^2$$'),
-#                  helpText('and output 3 $$\\sin^2(\\theta)+\\cos^2(\\theta)=1$$'),
- #                 helpText('The busy Cauchy distribution $$\\frac{1}{\\pi\\gamma\\,\\left[1 + \\left(\\frac{x-x_0}{\\gamma}\\right)^2\\right]}\\!$$')),
-#                helpText('You do not see me initially: $$e^{i \\pi} + 1 = 0$$'),
-#                helpText('If \\(X\\) is a Cauchy random variable, then $$P(X \\leq %.03f ) = %.03f$$')
-                    #h5('You do not see me initially: $$ \neq   \div   \ast  \times  \alpha \beta \sigma \mu \epsilon \sum{a,b} \binom {a} {b} {a \brack b}   {a \brace b}   [a]   \lbrace{a}\rbrace   \leq  \geq x_2   or   x^2$$')
-                  ),
+                  tags$head(tags$style(strong("a {color: yellow}"))),
                   #two columns for each of the two items
                   column(6,
                          #Description of App
-                         h1("What does this app do?"),
+                         h2("What does this app do?"),
                          #box to contain description
-                         box(background="red",width=12,
-                             h4("This application visualizes ..."),
-                             h3("An order statistic is ...."),
-#                            h2("\\neq   \div   \ast  \times  \alpha \beta \sigma \mu \epsilon \sum{a,b} \binom {a} {b} {a \brack b}   {a \brace b}   [a]   \lbrace{a}\rbrace   \leq  \geq x_2   or   x^2$$")
+                         box(background="blue",width=12,
+                             h4("The analysis sections of this app are divided into three main parts, each located under a seperate menu item on the dashboard; additionally, the last menu option (Table) allows you to view a sortable table of the data used in this analysis. The abilities of each analysis section are described below:"),
+                             
+                             h3(strong("Explore")), 
+                             h4("In this section, you may perform exploratory analysis on single variables and in combinations of variables. Options for both categorical and quantitative variables are available. The user has the ability to select combinations of up to 3 variables to generate the following outputs:"),
+                             br(),
+                             h4(strong("Options for Categorical Variables")),
+                             h4("    - bar plot (up to 3 variables"),
+                             h4("    - bar plot by series (up to 2 variables"),
+                             h4("    - frequency/contingency table(up to 3 variables"),
+                             br(),
+                             h4(strong("Options for Quantitative Variables")),
+                             h4("    histogram (up to 3 variables"),
+                             h4("    scatter plot by series (up to 2 variables"),
+                             h4("    - frequency/contingency table(up to 3 variables"),
+                             br(),
+                             
+                             h3(strong("Investigate")), 
+                             h4("In this section, you may conduct additional unsupervised analyses including hierarchical clustering and principla components analysis:"),
+                             br(),
+                             h4(strong("Hierarchical Clustering")),
+                             h4("Outputs a dendogram of results"),
+                             h4(strong("Principal Components Analysis")),
+                             h4("Outputs include paired plots of variables, a biplot and a screeplot of results"),
+                             br(),
+                             
+                             h3(strong("Model")), 
+                             h4("This section, allows you to conduct supervised analyses including logistic regression and random forest analyses:"),
+                             br(),
+                             h4(strong("Logistic Regression")),
+                             h4("Outputs regression formula and a simple plot of resulting regression line; also provides information on model accuracy"),
+                             h4(strong("Random Forest Analyses")),
+                             h4("Outputs include model formula and information on model accuracy"),
+                             br()
                          )
-                  ),
+        ),
                   column(6,
-                         #How to use the app
-                         h1("How to use the app?"),
+                         #Description of App
+                         h2("How do I use this app?"),
                          #box to contain description
-                         box(background="red",width=12,
-                             h4("The tabs across the top ..."),
-                             h5("The controls for the visualization ..."),
-#                             withMathJax(h5("$$d_{ij}=d(\{X_i\}, \{X_j\}) = { \|X_i - X_j\|^2}$$ For mathJax: $$\\(d_{ij}=d(\\{X_i\\}, \\{X_j\\}) = { \\|X_i - X_j\\|^2}\\)$$"))
-#                             withMathJax(h5("or \\(d_{ij}=d(\\{X_i\\}, \\{X_j\\}) = { \\|X_i - X_j\\|^2}\\"))
-#                             uiOutput('ex1'),
+                         box(background="blue",width=12,
+                             h4("To use this app, start by entering in the side panel any changes to defaule general criteria options to be applied to the data. Options include the ability to select for the registration status of voters, and specify election dates to include in the data. I recommend using the default options for voter status (to include only active voters)"),
+                             h4("Once any general options have been selected, variables selection options are available within each analysis menu's pages and tabs. Analysis are grouped by number of variables and the data type of variables to be analyzed; the user has options to select from available variables."),
                          )
                 )
-        ),
+        )
+  ),
+        
+        tabItem(tabName = "aboutData",
+        fluidRow(
+          #add in latex functionality if needed: \ for inline and $$ for separate line...
+        column(12,
+               #Description of App
+               h1("Information About the Data Used in this App"),
+               #box to contain description
+               box(background="blue",width=12,
+                   h3("Data Source"),
+                   h4("The data used by this application consists of voter registration data and voting history for Mecklenburg County for the most recent 20 major elections as of the file creation date; elections dates covered by the data range from May, 8, 2012 to October 8, 2019. For a listing of previous elections please check this County website:"), 
+                      h4(tags$a("Mecklenburg County Previous Elections", href="https://www.mecknc.gov/BOE/data/Pages/PreviousElectionResults.aspx")),
+                   br(),
+                  h4("This data was obtained directly from the Mecklenburg County Board of Elections website:"),
+                  h4(tags$a("Mecklenburg County Elections Data", href="https://www.mecknc.gov/BOE/data/Pages/VoterDataFileDetails.aspx")), 
+                  br(),
+                  h4("Similar data for all North Carolina Counties may be obtained directly from the North Carolina State Board of Elections website:"),
+                  h4(tags$a("NC SBE Voter Data", href="https://www.ncsbe.gov/Public-Records-Data-Info/Election-Results-Data%23VoterRegistrationData")),
+                  h4(tags$a("NC SBE Voter Data (direct file links", href="https://dl.ncsbe.gov/index.strong?prefix=data/")),
+                  br(),
+                  h4("Although the data obtained from the Mecklenburg County website is a single file summarizing all data, the State's reports are divided into two seperate files for the voter registration record and voter activity history."),
+                  br(),
+                  h3("Data File Information"),
+                  h4("Data fields included in the file used by this application are shown in the table below."),
+                  br(),
+                  tableOutput("definitions"),
+                  br(),
+                  h3("Other Notes On Data"),
+                  h4("The Mecklenburg County voter data file consists of oover 700,000 records and includes both active and inactive voters.  (Due to this massive size, the app includes an option to select for  sample of records prior to conducting analysis.) Although he registration date is included in the voter file, there is no information provided regarding voter eligibility during the report period; information on date a voter became inactive is unavailable. It is recommended that analysis be conducted on voters shown as having an ACTIVE voter status (this option is selected by default)."),
+                  
+                  h4("When filtering data for analysis and creation of models, keep in mind that voting habits may differ significantly from presidential to non-presidential years and further variations may occur for odd-year elections if there are no major political races/issues on the ballot."),
+                  h4("Voter current age as of the date of file generation is included in the data, but not the birthdate."),
+                  h4("Consideration should also be given to other confounding factors not captured within the data that may imact voter participations; examples include changes to early voting options over time, income and education of individual, when an individual moved to the County (or otherwise first became eligible to vote), and undelying changes to the overall demographic makeup of the County population over time."),
+                  h4("For additional information related to Mecklenburg County and North Carolina election processes, please visit the following sites:"),
+                  br(),
+                  h4(tags$a("Mecklenburg County Board of Elections", href="https://www.mecknc.gov/BOE/Pages/default.aspx")),
+                  h4(tags$a("NC Board of Elections", href="https://www.ncsbe.gov/ERC"))
+                  
 
+                )
+              )
+        )
+),
     #define the body of the "explore" section
         # Second tab content
       tabItem(tabName = "explore",
+              h3("Exploratory Analysis: Summary Graphs and Tables"),
             fluidRow(
-              column(12,
-                  h1("Voter Data for Mecklenburg County"),
-                  h2("Exploratory Analysis"),
-                  br(),
-                  column(4,
-                       box(width=12,title="Beta distribution with parameters",
-                           numericInput("Param1","Alpha = ",value=1,min=0.1,step=0.1),
-                           numericInput("Param2","Beta = ",value=1,min=0.1,step=0.1),
-                           sliderInput("slider", "Number of elections", min = 1, max = 20, value = 19, step = 1),
-                           h4("Order statistics of interest, choose integers from 1 to n"),
-                           numericInput("ord1","1st Order Stat",value=1,min=1,max=5),
-                           checkboxInput("overlay",label="Overlay Theoretical Distribution",value=FALSE)
-                       )
-                  ),
-                  #Show a plot of Exploration
-                  column(8,
-                         plotOutput("sleepPlot")
-                  )
-              )
-      )),
-    
+              column(6,
+                     plotOutput("sleepPlot"),                     
+                     #box(width=12,title="graphs and plots here",
+                     h4("Optional Explore Text Here")
+              ),
+              br(),
+              column(6,
+              tabsetPanel(
+                tabPanel("1 Variable",
+                  tabsetPanel(
+                      tabPanel("Categorical",
+                               selectizeInput("ExpCatVar1", "Select Variable For Analysis", choices = c("a", "b", "c")),
+                      ),
+                      tabPanel("Quantitative",
+                               fluidRow(
+                                 h5("Some text here...includeMarkdown"),
+                                 selectizeInput("ExpQuantVar1", "Select Variable For Analysis", choices = c("1a", "2b", "3c"))
+                               )
+                      )
+                )#end tabPanel
+                ), #end tab panel
+                tabPanel("2 Variables", 
+                  tabsetPanel(
+                         tabPanel("Categorical",
+                                  fluidRow(
+                                    h5("Some text here... includeText"),
+                                    selectizeInput("ExpCatVar2a", "Select Variable For Analysis", choices = c("a", "b", "c")),
+                                    selectizeInput("ExpCatVar2b", "Select Variable For Analysis", choices = c("a", "b", "c"))
+                                    
+                                  )                
+                         ),
+                         tabPanel("Quantitative",
+                                  fluidRow(
+                                    h5("Some text here...includeMarkdown"),
+                                    selectizeInput("ExpQuantVar2a", "Select Variable For Analysis", choices = c("1a", "2b", "3c")),
+                                    selectizeInput("ExpQuantVar2b", "Select Variable For Analysis", choices = c("1a", "2b", "3c"))
+                                  )
+                         ),
+                         tabPanel("Combination",
+                                  fluidRow(
+                                    h5("Some text here...includestrong()"),
+                                    selectizeInput("ExpCombVar2a", "Select Categorical Variable For Analysis", choices = c("a", "b", "c")),
+                                    selectizeInput("ExpCombVar2b", "Select Quantitative Variable For Analysis", choices = c("1a", "2b", "3c"))
+                                  )
+                         )
+                         )
+                ), #end tab panel
+                tabPanel("3 Variables", 
+                  tabsetPanel(
+                           tabPanel("Categorical",
+                                    fluidRow(
+                                      h5("Some text here... includeText"),
+                                      
+                                      selectizeInput("ExpCatVar3a", "Select Variable For Analysis", choices = c("a", "b", "c")),
+                                      selectizeInput("ExpCatVar3b", "Select Variable For Analysis", choices = c("a", "b", "c")),
+                                      selectizeInput("ExpCatVar3c", "Select Variable For Analysis", choices = c("a", "b", "c"))
+                                    )                
+                           ),
+                           tabPanel("Quantitative",
+                                    fluidRow(
+                                      h5("Some text here...includeMarkdown"),
+                                      
+                                      selectizeInput("ExpQuantVar3a", "Select Variable For Analysis", choices = c("1a", "2b", "3c")),
+                                      selectizeInput("ExpQuantVar3b", "Select Variable For Analysis", choices = c("1a", "2b", "3c")),
+                                      selectizeInput("ExpQuantVar3c", "Select Variable For Analysis", choices = c("1a", "2b", "3c")),
+                                    )
+                           ),
+                           tabPanel("Combination",
+                                tabsetPanel(
+                                  tabPanel("1 categorical, 2 quantitative",
+                                    fluidRow(
+                                         h5("Some text here... includeText"),
+                                         selectizeInput("ExpCombVar4q1", "Select Quantitative Variable For Analysis", choices = c("1a", "2b", "3c")),
+                                         selectizeInput("ExpCombVar4q2", "Select Quantitative Variable For Analysis", choices = c("1a", "2b", "3c")),
+                                         selectizeInput("ExpCombVar4c1", "Select Categorical Variable For Analysis", choices = c("a", "b", "c"))
+                                                 )                
+                                        ),
+                                  tabPanel("2 categorical, 1 quantitative",
+                                      fluidRow(
+                                          h5("Some text here...includeMarkdown"),
+                                          selectizeInput("ExpCombVar4q1", "Select Quantitative Variable For Analysis", choices = c("1a", "2b", "3c")),
+                                          selectizeInput("ExpCombVar4c1", "Select Categorical Variable For Analysis", choices = c("a", "b", "c")),
+                                          selectizeInput("ExpCombVar4c2", "Select Categorical Variable For Analysis", choices = c("a", "b", "c"))
+                                                 )
+                                        )
+                                      )
+                           )#end tabPanel
+                         ) #end tabsetPanel
+                ) #end tab panel
+              ) #end tabsetPanel
+            ) # end column
+            ) #end fluid row
+              ),
+
         tabItem(tabName = "investigate",
             fluidRow(
               column(4,
                        box(width=12,title="Beta distribution with parameters",
                            numericInput("Param1","Alpha = ",value=1,min=0.1,step=0.1),
-                           numericInput("Param2","Beta = ",value=1,min=0.1,step=0.1),
                            sliderInput("sampleSize","Sample size:",min=1,max=30,value=5),
                            h4("Order statistics of interest, choose integers from 1 to n"),
-                           numericInput("ord1","1st Order Stat",value=1,min=1,max=5),
                            checkboxInput("overlay",label="Overlay Theoretical Distribution",value=FALSE)
                        )
-                ),
-                #Show a plot of the prior
-                column(8,
-                       plotOutput("sleepPlot")
                 ),
                 #Show a plot of the prior    
                 column(8,
                        tabsetPanel(
-                         tabPanel("Supervised Learning",           
+                         tabPanel("Cluster Analysis",           
                                   fluidRow(
                                   plotOutput("sleepPlot")
                                   )
                                  ), #end tab panel
-                         tabPanel("Unsupervised Learning", 
+                         tabPanel("Principal Components", 
+                                  #add latex functionality: \ for inline and $$ for separate line...
+                                  withMathJax(),
+                                  helpText('An irrational number \\(\\sqrt{2}\\)
+           and a fraction $$1-\\frac{1}{2}$$'),
+                                  helpText('and a fact about \\(\\pi\\):
+           $$\\frac2\\pi = \\frac{\\sqrt2}2 \\cdot
+           \\frac{\\sqrt{2+\\sqrt2}}2 \\cdot
+           \\frac{\\sqrt{2+\\sqrt{2+\\sqrt2}}}2 \\cdots$$'),
                                   fluidRow(
                                     column(4,
                                            sliderInput("sampleSize","Sample size:",min=1,max=30,value=5),
                                            br(),
-                                           sliderInput("sampleSize","Sample size:",min=1,max=30,value=5)
-                                    ),
-                                    column(4,
-                                           sliderInput("sampleSize","Sample size:",min=1,max=30,value=5),
-                                           br(),
-                                           sliderInput("sampleSize","Sample size:",min=1,max=30,value=5)
                                     )
                                   )        
-                                 ), #end tab panel
-                         tabPanel("Other", 
-                                  tabsetPanel(
-                                    tabPanel("kNN",
-                                             fluidRow(
-                                               h3("Some text here... includeText")
-                                             )                
-                                    ),
-                                    tabPanel("Principal Components",
-                                             fluidRow(
-                                               h3("Some text here...includeMarkdown")
-                                             )
-                                    ),
-                                    tabPanel("Classification Tree",
-                                             fluidRow(
-                                               h3("Some text here...includeHTML()")
-                                             )
-                                    ),
-                                    tabPanel("Regression",
-                                             fluidRow(
-                                               h3("Some text here...includeMarkdown")
-                                             )
-                                    ),
-                                    tabPanel("Log",
-                                             fluidRow(
-                                               h3("Some text here...includeMarkdown")
-                                             )
-                                    )#end tabPanel
-                                  ) #end tabsetPanel
-                         ) #end tab panel
+                                 ) #end tab panel
                        ) #end tab set
                 ) #end column
               ) #end fluidrow
-      ) #end tabItem
+      ), #end tabItem
+
+
+        tabItem(tabName = "model",
+                fluidRow(
+                  column(4,
+                         box(width=12,title="Beta distribution with parameters",
+                             numericInput("Param1","Alpha = ",value=1,min=0.1,step=0.1),
+                             numericInput("Param2","Beta = ",value=1,min=0.1,step=0.1),
+                             sliderInput("sampleSize","Sample size:",min=1,max=30,value=5),
+                             h4("Order statistics of interest, choose integers from 1 to n"),
+                             numericInput("ord1","1st Order Stat",value=1,min=1,max=5),
+                             checkboxInput("overlay",label="Overlay Theoretical Distribution",value=FALSE)
+                         )
+                  ),
+                  #Show a plot of the prior
+                  column(8,
+                         plotOutput("sleepPlot")
+                  ),
+                  #Show a plot of the prior    
+                  column(8,
+                         tabsetPanel(
+                           tabPanel("Cluster Analysis",           
+                                    fluidRow(
+                                      plotOutput("sleepPlot")
+                                    )
+                           ), #end tab panel
+                           tabPanel("Principal Components", 
+                                    fluidRow(
+                                      column(4,
+                                             sliderInput("sampleSize","Sample size:",min=1,max=30,value=5),
+                                             br(),
+                                      )
+                                    )        
+                           ) #end tab panel
+                         ) #end tab set
+                  ) #end column
+                ) #end fluidrow
+        ), #end tabItem
+        
+        # First tab content
+        tabItem(tabName = "data",
+                fluidRow(
+                  column(12,
+                         #Description of Data
+                         h2("Data used in this analysis?"),
+                         #box to contain description
+                          DT::dataTableOutput("table")
+        )
+                )
+        )
+
+
         ) #end tabItems
       )
 )

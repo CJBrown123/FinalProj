@@ -2,6 +2,7 @@ library(shiny)
 library(dplyr)
 library(ggplot2)
 library(rgl)
+library(readxl)
 
 elecList <- c("10/08/2019",
               "09/10/2019",
@@ -24,6 +25,9 @@ elecList <- c("10/08/2019",
               "07/17/2012",
               "05/08/2012")
 
+definitions <- read_excel("C:\\Users\\Valued User\\Documents\\CJ Class\\FinalProj\\definitions.xlsx")
+#create copy of original dataset
+origData <- voterMeck
 
 #install.packages("Hmisc") <- for better "capitalize()" function
 
@@ -35,8 +39,13 @@ shinyServer(function(input, output, session) {
 })
   
 	getData <- reactive({
-		newData <- msleep %>% filter(vore == input$vore)
+		newData <- origData
 	})
+	#create output of interactive data table    
+	output$table <- renderDataTable({
+	  DT::datatable(voterMeck)
+	})
+	
 	
   #create plot
   ##output$sleepPlot <- renderPlot({
@@ -69,9 +78,11 @@ shinyServer(function(input, output, session) {
   })
   
   #create output of observations    
-  output$table <- renderTable({
-		getData()
+  output$definitions <- renderTable({
+		definitions()
   })
+  
+
 
   # Add conditional logic to create dynamic changes to minimum slider value based on whether checkbox option for rem/opacity is selected.
   observe({if(input$rem) {
