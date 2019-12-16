@@ -3,10 +3,19 @@ library(dplyr)
 library(ggplot2)
 library(rgl)
 library(readxl)
+library(reshape2)
+library(DT)
+library(tidyverse)
+library(lubridate)
 
+################ Run ImportTable3.RMD prior to running app ################ 
+
+#Alternately, code from this import file is shown below (lines 12-205); shiny app server code starts on line 215 of this document.
+voterMeck <- read_csv(file = "C:\\Users\\Valued User\\Documents\\CJ Class\\FinalProj\\voterMeckCo.csv")
 
 #create copy of original dataset as a backup
 origData <- voterMeck
+
 
 elecList <- c("10/08/2019",
               "09/10/2019",
@@ -29,7 +38,175 @@ elecList <- c("10/08/2019",
               "07/17/2012",
               "05/08/2012")
 
-#definitions <- read_excel("C:\\Users\\Valued User\\Documents\\CJ Class\\FinalProj\\definitions.xlsx")
+eDate <- lapply(elecList, function(x) {
+   as.Date(as.character(as.POSIXct(x, format = "%m/%d/%Y")))  
+})
+
+eDateMin25 <- lapply(eDate, function(x) {
+   x-25
+})  
+
+
+dateSufx <- function(date) {
+   eDate <- as.POSIXct(date, format = "%m/%d/%Y")
+   suffix <- paste0(stringr::str_sub(eDate, 1, 4), stringr::str_sub(eDate, 6, 7), stringr::str_sub(eDate, 9, 10))
+}
+# run function to create date suffixes for new variable names
+elecSufx <- lapply(elecList, dateSufx)
+
+# create blank list, use for loop to make list of new column names.
+elecNames <- NULL
+for (i in 1:length(elecList)) {
+   elecNames[[i]] <- paste0("E", i, "_", elecSufx[[i]])
+}
+
+# Create List of election date column names
+dateCols1 <- voterMeck[, grepl("date", names(voterMeck))]
+dateCols2 <- voterMeck[, grepl("Date", names(voterMeck))]
+dates <- c(c(names(dateCols1)), c(names(dateCols2)))
+
+
+eDate <- lapply(elecList, function(x) {
+   as.Date(as.character(as.POSIXct(x, format = "%m/%d/%Y")))  
+})
+eDateMin25 <- lapply(eDate, function(x) {
+   x-25
+})  
+
+
+# Change class of date columns as appropriate:
+voterMeck$registr_dt <- as.Date(as.character(voterMeck$registr_dt))
+voterMeck[,dates] = apply(voterMeck[,dates], 2, function(x) as.POSIXct(x, format = "%m/%d/%Y"))
+
+for (i in 1:20) {
+   voterMeck <- mutate(voterMeck, elecNames[i] = 
+                          ifelse(!is.na(dates[i]), 1,
+                                 ifelse(is.na(dates[i]) & registr_dt <= as.Date(eDateMin25[[1]]), 0, NA)))
+}
+
+#voterMeck <- mutate(voterMeck, E1_20191008 = 0)
+voterMeck <- mutate(voterMeck, E1_20191008 = 
+                       ifelse(!is.na(E1_date), 1,
+                              ifelse(is.na(E1_date) & registr_dt <= as.Date(eDateMin25[[1]]), 0, NA)))
+print(levels(as.factor(voterMeck$E1_20191008)))
+
+
+#voterMeck <- mutate(voterMeck, E2_20190910 = 0)
+voterMeck <- mutate(voterMeck, E2_20190910 = 
+                       ifelse(!is.na(E2_Date), 1,
+                              ifelse(is.na(E2_Date) & registr_dt <= as.Date(eDateMin25[[2]]), 0, NA)))
+print(levels(as.factor(voterMeck$E2_20190910)))
+
+
+#voterMeck <- mutate(voterMeck, E3_20190514 = 0)
+voterMeck <- mutate(voterMeck, E3_20190514 = 
+                       ifelse(!is.na(E3_Date), 1,
+                              ifelse(is.na(E3_Date) & registr_dt <= as.Date(eDateMin25[[3]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E4_20181106 = 
+                       ifelse(!is.na(E4_Date), 1,
+                              ifelse(is.na(E4_Date) & registr_dt <= as.Date(eDateMin25[[4]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E5_20180508 = 
+                       ifelse(!is.na(E5_Date), 1,
+                              ifelse(is.na(E5_Date) & registr_dt <= as.Date(eDateMin25[[5]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E6_20171107 = 
+                       ifelse(!is.na(E6_Date), 1,
+                              ifelse(is.na(E6_Date) & registr_dt <= as.Date(eDateMin25[[6]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E7_20170912 = 
+                       ifelse(!is.na(E7_Date), 1,
+                              ifelse(is.na(E7_Date) & registr_dt <= as.Date(eDateMin25[[7]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E8_20161108 = 
+                       ifelse(!is.na(E8_Date), 1,
+                              ifelse(is.na(E8_Date) & registr_dt <= as.Date(eDateMin25[[8]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E9_20160315 = 
+                       ifelse(!is.na(E9_Date), 1,
+                              ifelse(is.na(E9_Date) & registr_dt <= as.Date(eDateMin25[[9]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E10_20151103 = 
+                       ifelse(!is.na(E10_Date), 1,
+                              ifelse(is.na(E10_Date) & registr_dt <= as.Date(eDateMin25[[10]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E11_20151006 = 
+                       ifelse(!is.na(E11_Date), 1,
+                              ifelse(is.na(E11_Date) & registr_dt <= as.Date(eDateMin25[[11]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E12_20150915 = 
+                       ifelse(!is.na(E12_Date), 1,
+                              ifelse(is.na(E12_Date) & registr_dt <= as.Date(eDateMin25[[12]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E13_20141104 = 
+                       ifelse(!is.na(E13_Date), 1,
+                              ifelse(is.na(E13_Date) & registr_dt <= as.Date(eDateMin25[[13]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E14_20140506 = 
+                       ifelse(!is.na(E14_Date), 1,
+                              ifelse(is.na(E14_Date) & registr_dt <= as.Date(eDateMin25[[14]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E15_2013110 = 
+                       ifelse(!is.na(E15_Date), 1,
+                              ifelse(is.na(E15_Date) & registr_dt <= as.Date(eDateMin25[[15]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E16_20131008 = 
+                       ifelse(!is.na(E16_Date), 1,
+                              ifelse(is.na(E16_Date) & registr_dt <= as.Date(eDateMin25[[16]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E17_20130910 = 
+                       ifelse(!is.na(E17_Date), 1,
+                              ifelse(is.na(E17_Date) & registr_dt <= as.Date(eDateMin25[[17]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E18_20121106 = 
+                       ifelse(!is.na(E18_Date), 1,
+                              ifelse(is.na(E18_Date) & registr_dt <= as.Date(eDateMin25[[18]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E19_20120717 = 
+                       ifelse(!is.na(E19_Date), 1,
+                              ifelse(is.na(E19_Date) & registr_dt <= as.Date(eDateMin25[[19]]), 0, NA)))
+voterMeck <- mutate(voterMeck, E20_20120508 = 
+                       ifelse(!is.na(E20_Date), 1,
+                              ifelse(is.na(E20_Date) & registr_dt <= as.Date(eDateMin25[[20]]), 0, NA)))
+
+voterMeck$totVotes <- rowSums(voterMeck[123:142]==1, na.rm=TRUE)
+voterMeck$totElig <- rowSums(!is.na(voterMeck[123:142]))
+voterMeck$totPartic <- round((voterMeck$totVotes/voterMeck$totElig)*100, 0)
+
+voterMeck <- mutate(voterMeck, ageCat =  ifelse(age < 18, "minor", 
+                                                ifelse((age >= 18) & (age < 25), "18-24",
+                                                       ifelse((age >= 25) & (age < 35), "25-34",
+                                                              ifelse((age >= 35) & (age < 45), "35-44",
+                                                                     ifelse((age >= 45) & (age < 55), "45-54",
+                                                                            ifelse((age >= 55) & (age < 65), "55-64",
+                                                                                   ifelse((age >= 65) & (age < 75), "65-74",
+                                                                                          ifelse((age >= 75), "75+", "Error")))))))))
+print(levels(as.factor(voterMeck$ageCat)))
+table(voterMeck$ageCat, exclude = NULL)
+
+voterMeck$ageCat <- as.factor(voterMeck$ageCat)
+voterMeck$precinct_desc <- as.factor(voterMeck$precinct_desc)
+voterMeck$race_code <- as.factor(test$race_code)
+voterMeck$party_cd <- as.factor(voterMeck$party_cd)
+voterMeck$ethnic_code <- as.factor(voterMeck$ethnic_code)
+voterMeck$sex_code <- as.factor(voterMeck$sex_code)
+voterMeck$res_city_desc <- as.factor(voterMeck$res_city_desc)
+voterMeck$zip_code <- as.factor(voterMeck$zip_code)
+voterMeck$status_cd <- as.factor(voterMeck$status_cd)
+voterMeck$municipality_desc <- as.factor(voterMeck$municipality_desc)
+voterMeck$ward_desc <- as.factor(voterMeck$ward_desc)
+voterMeck$county_commiss_desc <- as.factor(voterMeck$county_commiss_desc)
+voterMeck$school_dist_desc <- as.factor(voterMeck$school_dist_desc)
+
+voterMeck <- voterMeck %>% select(-(8:25), -pct_portion)
+
+voterMeck$E1_VotingMethod <- as.factor(voterMeck$E1_VotingMethod)
+voterMeck$E2_VotingMethod <- as.factor(voterMeck$E2_VotingMethod)
+voterMeck$E3_VotingMethod <- as.factor(voterMeck$E3_VotingMethod)
+voterMeck$E4_VotingMethod <- as.factor(voterMeck$E4_VotingMethod)
+voterMeck$E5_VotingMethod <- as.factor(voterMeck$E5_VotingMethod)
+voterMeck$E6_VotingMethod <- as.factor(voterMeck$E6_VotingMethod)
+voterMeck$E7_VotingMethod <- as.factor(voterMeck$E7_VotingMethod)
+voterMeck$E8_VotingMethod <- as.factor(voterMeck$E8_VotingMethod)
+voterMeck$E9_VotingMethod <- as.factor(voterMeck$E9_VotingMethod)
+voterMeck$E10_VotingMethod <- as.factor(voterMeck$E10_VotingMethod)
+voterMeck$E11_VotingMethod <- as.factor(voterMeck$E11_VotingMethod)
+voterMeck$E12_VotingMethod <- as.factor(voterMeck$E12_VotingMethod)
+voterMeck$E13_VotingMethod <- as.factor(voterMeck$E13_VotingMethod)
+voterMeck$E14_VotingMethod <- as.factor(voterMeck$E14_VotingMethod)
+voterMeck$E15_VotingMethod <- as.factor(voterMeck$E15_VotingMethod)
+voterMeck$E16_VotingMethod <- as.factor(voterMeck$E16_VotingMethod)
+voterMeck$E17_VotingMethod <- as.factor(voterMeck$E17_VotingMethod)
+voterMeck$E18_VotingMethod <- as.factor(voterMeck$E18_VotingMethod)
+voterMeck$E19_VotingMethod <- as.factor(voterMeck$E19_VotingMethod)
+voterMeck$E20_VotingMethod <- as.factor(voterMeck$E20_VotingMethod)
+
+definitions <- read_excel("C:\\Users\\Valued User\\Documents\\CJ Class\\FinalProj\\definitions.xlsx")
 
 
 #create lists for categorical and qunatitative variables
@@ -305,6 +482,10 @@ output$glmTable <- renderDataTable({
    newData <- getData()
    glmFit <- glm(E8_20161108 ~ age + input$predGLM, data = newData, family = "binomial")
    predict(glmFit, newdata = data.frame(age = c(scatPredAge1, scatPredAge2, scatPredAge3), input$scatVarC = c(input$scatPred1c, scatPred2c, scatPred3c)), type = "response", se.fit = TRUE)
+})
+
+output$predGLM <- renderUI({
+   unlist(levels(as.factor(input$predGLM)))
 })
    
    
