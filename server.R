@@ -36,16 +36,6 @@ elecList <- c("10/08/2019",
 catVars <- c(names(voterMeck[,1:5]), names(voterMeck[,7:9]), names(voterMeck[,12:22]), names(voterMeck[,127]))
 quantVars <- c(names(voterMeck[, 6]), names(voterMeck[, 104:126]))
 
-#Summary satistics and box plots for numeric variables
-# I created a function into which someone can enter the variables/columns names and receive summary statistics. 
-summFun <- function(x, ...) {
-  sub0 <- summary(voterMeck$age)
-  , totVotes, totElij, totPartic)
-  sub1 <- round(sapply(sub0, summary, na.rm = TRUE), 1)
-  sub2 <- knitr::kable(sub0, caption = "Summary of Numeric voting Variables")
-  return(sub2)
-}
-
 
 shinyServer(function(input, output, session) {
   # create title.
@@ -122,7 +112,7 @@ shinyServer(function(input, output, session) {
    getData3c <- reactive({
      newData3c <- table(input$catVar1, input$catVar2, input4catVar3)
    })
-   output$table <- renderDataTable({
+   output$table3c <- renderDataTable({
      getData3c()
    })  
 
@@ -221,27 +211,101 @@ shinyServer(function(input, output, session) {
    output$pairs <- renderPlot({
       #get filtered data
       newData <- getData()
-      voterPairs <- select(newData, totPartic:ageCat, race_code, sex_code, party_cd, ethnic_code, zip_code) %>%
+      newDataPR <- select(newData, pcVarq1, pcVarq2, pcVarq3, pcVarq4, pcVarq5, pcVarq6) %>%
       `[`(rowSums(is.na(.)) == 0, )
-   pairs(voterPairs, cex = 0.4) #numeric vars only, remove nas
+   pairs(newDataPR, cex = 0.4) #numeric vars only, remove nas
 })
    
-   #princ. components analysis
-   output$PCsTab <- renderDataTable({
-      PCs <- knitr::kable(prcomp(newData, center = TRUE, scale = TRUE))
-   return(PCs)
+
+
+ #princ. components analysis
+   getDataPCs <- reactive({
+      newData <- getData()
+      newDataPC <- select(newData, pcVarq1, pcVarq2, pcVarq3, pcVarq4, pcVarq5, pcVarq6) %>%
+      `[`(rowSums(is.na(.)) == 0, )
+     newDataPC <- prcomp(newDataPC, center = TRUE, scale = TRUE)
    })
+   
+   output$PCsTab <- renderDataTable({
+     getDataPCs()
+   })  
+
+  
+  # output$PCsTab <- renderDataTable({
+  #    PCs <- prcomp(voterPairs, center = TRUE, scale = TRUE)
+  # return(PCs)
+   #})
    
    #scree plot (cumulative)
    output$scree <- renderPlot({
-   plot(cumsum(PCsTab$sdev^2/sum(PCs$sdev^2)), xlab = "Principal Component",
+  #PCs <- prcomp(voterPairs, center = TRUE, scale = TRUE)
+   plot(cumsum(getDataPCs$sdev^2/sum(getDataPCs$sdev^2)), xlab = "Principal Component",
         ylab = "Cum. Prop of Variance Explained", ylim = c(0, 1), type = 'b')
+   })
    
    #biplot
-   biplot(PCsTab, xlabs = input$catVar1, choices = c(input$selPc1, selPc2), cex = 0.8,
-          xlim = c(-0.1, 0.1), ylim = c(-0.1, 0.1))
+output$biplot<- renderPlot({
+   biplot(getDataPCs, choices = c(input$selPc1, input$selPc2), cex = 0.6,
+          xlim = c(-0.08, 0.15), ylim = c(-0.12, 0.07))
+})
    
+
+#HEIRARCHICAL CLUSTER ANALYSIS (with dendogram)
+###################################
+###################################
+###################################
+###################################
+###################################
+###################################
+###################################
+
+
+#SUPERVISED LEARNING
+#Logistic Regression
+
+#Voting by Age for Last Presidential Election (November 8, 2016)
+#Color-coded by <RACE>
+output$jitPres16 <- renderPlot({
+   newData <- getData()
+   p2 <- ggplot(newData, aes(x = age, y = E8_20161108, color = input$jitVar16))  
+   p2 + geom_jitter(mapping = NULL, data = voterActive, stat = "identity",
+                 width = .05, height = .1,
+                 na.rm = FALSE, show.legend = NA, inherit.aes = TRUE)
+})
+
+
+#Voting by Selected Quantitative Variable for Last Presidential Election (November 8, 2016)
+
+#Proportion of Overall Voting by Selected Quantitative Variable
+output$scatAll <- renderPlot({
+   newData <- getData()
+   distSum <- newData %>% filter(!is.na(E8_20161108)) %>% group_by(input$scatVarQ) %>% summarize(propVoted = mean(E8_20161108), n = n())
+   ggplot(distSum, aes(x = input$scatVarQ, y = propVoted, size = n)) + 
+      geom_point(stat = "identity")
+})
+
+#Proportion of Overall Voting by Selected Quantitative Variable Squared
+output$scatAllSq <- renderPlot({
+   newData <- getData()
+   distSum <- newData %>% filter(!is.na(E8_20161108)) %>% group_by(input$scatVarQ) %>% summarize(propVoted = mean(E8_20161108), n = n())
+   ggplot(distSum, aes(x = input$scatVarQ^2, y = propVoted, size = n)) + 
+      geom_point(stat = "identity")
+})
    
+#Proportion of Overall Voting by the Natural Log of Selected Quantitative Variable 
+output$scatAllLn <- renderPlot({
+   newData <- getData()
+   distSum <- newData %>% filter(!is.na(E8_20161108)) %>% group_by(input$scatVarQ) %>% summarize(propVoted = mean(E8_20161108), n = n())
+   ggplot(distSum, aes(x = log(input$scatVarQ), y = propVoted, size = n)) + 
+      geom_point(stat = "identity")
+})
+
+#predict probability of voting for given age in combination with second categorical predictor variable
+output$glmTable <- renderDataTable({
+   newData <- getData()
+   glmFit <- glm(E8_20161108 ~ age + input$predGLM, data = newData, family = "binomial")
+   predict(glmFit, newdata = data.frame(age = c(scatPredAge1, scatPredAge2, scatPredAge3), input$scatVarC = c(input$scatPred1c, scatPred2c, scatPred3c)), type = "response", se.fit = TRUE)
+})
    
    
    #DATA TABLE INFORMATION
