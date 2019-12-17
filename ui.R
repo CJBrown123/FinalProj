@@ -95,8 +95,8 @@ dashboardPage(skin="black",
                              h4("Variables selection options are available within each analysis menu's pages and tabs. Analysis are grouped by number of variables and the data type of variables to be analyzed; the user has options to select from available variables.")
                          )
                 )
-        )
-  ),
+        )#end fluid
+  ), #end itab tem
         
         tabItem(tabName = "aboutData",
         fluidRow(
@@ -167,7 +167,7 @@ dashboardPage(skin="black",
                                selectizeInput("catVar1", "Select Variable For Analysis", selected = "party_cd", choices = catVars),
                                plotOutput("plotTime1a", dblclick = "plot_dblclick"),
                                plotOutput("plot1c"),
-                               tableOutput("table1c"),
+                               dataTableOutput("table1c"),
                                h4("Observations associated with manually selected data"),
                                tableOutput("data_dblclick")
                                ),
@@ -175,7 +175,7 @@ dashboardPage(skin="black",
                                fluidRow(
                                  selectizeInput("quantVar1", "Select Variable For Analysis", selected = "age", choices = quantVars),
                                  plotOutput("box1q", dblclick = "plot_dblclick")),
-                               plotOutput("hist1q", dblclick = "plot_dblclick")),
+                                 plotOutput("hist1q", dblclick = "plot_dblclick")),
                                  h4("Observations associated with manually selected data"),
                                tableOutput("plot_dblclickh"),
                                h4("Frequency table for selected variable")
@@ -188,7 +188,7 @@ dashboardPage(skin="black",
                                     selectizeInput("expCatVar2a", "Select Variable For Analysis", choices = catVars),
                                     selectizeInput("expCatVar2b", "Select Variable For Analysis", choices = catVars),
                                     plotOutput("plot2c"),
-                                    tableOutput("table2c"),
+                                    dataTableOutput("table2c")
                                   )                
                          ),
                          tabPanel("Quantitative",
@@ -202,6 +202,7 @@ dashboardPage(skin="black",
                                   fluidRow(
                                     selectizeInput("expCombVar2a", "Select Categorical Variable For Analysis", choices = catVars),
                                     selectizeInput("expCombVar2b", "Select Quantitative Variable For Analysis", choices = quantVars),
+                                    plotOutput("combo2")
                                   )
                          )
                 ) #end tab panel set
@@ -215,7 +216,7 @@ dashboardPage(skin="black",
                                       selectizeInput("expCatVar3b", "Select Variable For Analysis", choices = catVars),
                                       selectizeInput("expCatVar3c", "Select Variable For Analysis", choices = catVars),
                                       plotOutput("plot3c"),
-                                      tableOutput("table3c"),
+                                      dataTableOutput("table3c")
                                     )                
                            ),
                            tabPanel("Combination",
@@ -225,8 +226,7 @@ dashboardPage(skin="black",
                                          selectizeInput("expCombVar4q1", "Select Quantitative Variable For Analysis", choices = quantVars),
                                          selectizeInput("expCombVar4q2", "Select Quantitative Variable For Analysis", choices = quantVars),
                                          selectizeInput("expCombVar4c1", "Select Categorical Variable For Analysis", choices = catVars),
-                                         plotOutput("Combo3"),
-                                         tableOutput("table3c")
+                                         plotOutput("Combo3")
                                                  )#fluid
                                         )#tabpanel
                                       )#tabset
@@ -255,7 +255,7 @@ dashboardPage(skin="black",
                            br(),
                            h4("Biplot Inputs (select 2 principal components to plot)"),
                            numericInput("selPc1", "Select Principal Component Number (x-axis).", value = 1, min = 1, max = 6, step = 1),
-                           numericInput("selPc2", "Select Principal Component Number (y-axis).",  value = 2, min = 1, max = 6, step = 1),
+                           numericInput("selPc2", "Select Principal Component Number (y-axis).",  value = 2, min = 1, max = 6, step = 1)
                        )
                 ), 
                 #Show a plot of the prior entries    
@@ -283,7 +283,11 @@ dashboardPage(skin="black",
                   column(12,
                          box(width=12,title="Generalized Linear Regression:Logistic Regression",
                              h6("A very common generalized linear model is the logistic regression model. This model is typically used for predicting a response that is binary (i.e., success/failure. The below analysis will allow you to model voting habits where success = an individual having voted and failure = an individual not voting."),
-                             h6("The logit function can be used to obtain the log odds of getting a certain result; the logit function is is $\log \frac{p}{1-p}$"),
+                             withMathJax(),
+                             h6("Basic logistic regression models success probability using the following formula:"),
+                             helpText('\\(P(success|yards)=\\) \\(\\frac{e\\^(\\beta_0+\\beta_1x)}{1+e\\^(\\beta_0+\\beta_1x)}\\)'),
+                             h6("The logit function can be used to obtain the log odds of getting a certain result; the logit function is \\(\\log\\frac{p}{1-p}\\)"),
+                             helpText('\\(\\log\\frac{p}{1-p}\\)'),
                              h6("We can recover the odds by exponentiating the log-odds result")
                              ),
                              br(),
@@ -303,7 +307,7 @@ dashboardPage(skin="black",
                                </ul>
                              "),
                              br(),
-                             selectizeInput("scatVarQ", "Select quantitative variable For Color-coding of output plot", value = "age", choices = quantVars),
+                             selectizeInput("scatVarQ", "Select quantitative variable For Color-coding of output plot", selected = "age", choices = quantVars),
                              br(),
                              h4("Proportion of Overall Voting by Selected Quantitative Variable"),
                              plotOutput("scatAll"),
@@ -317,15 +321,18 @@ dashboardPage(skin="black",
                              h4("Predict Log-Odd of Voting by Age For Given Categorical Variable"),
                              br(),
                              h6("Select a categorical variable below, then select  three values of that variable along with three ages to generate predictions."),
-                             selectizeInput("predGLM", "Select categorical variable For Color-coding of output plot", value = "party_cd", choices = catVars),
+                             selectizeInput("predGLM", "Select categorical variable For Color-coding of output plot", selected = "party_cd", choices = catVars),
+                         
                              fluidRow(
                                column(6,
                              numericInput("scatPredAge1","Age Value For Prediction 1",value=18,min=17,max=130,step=1),
                              numericInput("scatPredAge1","Age Value For Prediction 1",value=18,min=17,max=130,step=1),
-                             numericInput("scatPredAge1","Age Value For Prediction 1",value=18,min=17,max=130,step=1),
+                             numericInput("scatPredAge1","Age Value For Prediction 1",value=18,min=17,max=130,step=1)
                                ),
                              column(6,
-                             selectizeInput("scatPred1c", "Select categorical variable value for prediction1", choices = levels(as.factor(input$predGLM))),
+                             selectizeInput("glmPred1c", "Select categorical variable value for prediction1", choices = uiOutput("GLMpred")),
+                             selectizeInput("glmPred2c", "Select categorical variable value for prediction1", choices = uiOutput("GLMpred")),
+                             selectizeInput("glmPred3c", "Select categorical variable value for prediction1", choices = uiOutput("GLMpred")),
                              tableOutput("glmTable")
                          )
                   )
@@ -339,7 +346,8 @@ dashboardPage(skin="black",
                   column(12,
                          #Description of Data
                          h2("Data used in this analysis"),
-                         plotOutput("plotTime", dblclick = "plot_dblclick"),                         dataTableOutput("table")
+                         plotOutput("plotTime", dblclick = "plot_dblclick"),
+                         dataTableOutput("table")
                 )
         )
         )
