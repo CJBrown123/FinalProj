@@ -167,7 +167,7 @@ dashboardPage(skin="black",
                                selectizeInput("catVar1", "Select Variable For Analysis", selected = "party_cd", choices = catVars),
                                plotOutput("plotTime1a", dblclick = "plot_dblclick"),
                                plotOutput("plot1c"),
-                               tableOutput("table1c"),
+                               dataTableOutput("table1c"),
                                h4("Observations associated with manually selected data"),
                                tableOutput("data_dblclick")
                                ),
@@ -188,7 +188,7 @@ dashboardPage(skin="black",
                                     selectizeInput("expCatVar2a", "Select Variable For Analysis", choices = catVars),
                                     selectizeInput("expCatVar2b", "Select Variable For Analysis", choices = catVars),
                                     plotOutput("plot2c"),
-                                    tableOutput("table2c")
+                                    dataTableOutput("table2c")
                                   )                
                          ),
                          tabPanel("Quantitative",
@@ -216,7 +216,7 @@ dashboardPage(skin="black",
                                       selectizeInput("expCatVar3b", "Select Variable For Analysis", choices = catVars),
                                       selectizeInput("expCatVar3c", "Select Variable For Analysis", choices = catVars),
                                       plotOutput("plot3c"),
-                                      tableOutput("table3c")
+                                      dataTableOutput("table3c")
                                     )                
                            ),
                            tabPanel("Combination",
@@ -226,8 +226,7 @@ dashboardPage(skin="black",
                                          selectizeInput("expCombVar4q1", "Select Quantitative Variable For Analysis", choices = quantVars),
                                          selectizeInput("expCombVar4q2", "Select Quantitative Variable For Analysis", choices = quantVars),
                                          selectizeInput("expCombVar4c1", "Select Categorical Variable For Analysis", choices = catVars),
-                                         plotOutput("Combo3"),
-                                         tableOutput("table3c")
+                                         plotOutput("Combo3")
                                                  )#fluid
                                         )#tabpanel
                                       )#tabset
@@ -284,7 +283,11 @@ dashboardPage(skin="black",
                   column(12,
                          box(width=12,title="Generalized Linear Regression:Logistic Regression",
                              h6("A very common generalized linear model is the logistic regression model. This model is typically used for predicting a response that is binary (i.e., success/failure. The below analysis will allow you to model voting habits where success = an individual having voted and failure = an individual not voting."),
-                             h6("The logit function can be used to obtain the log odds of getting a certain result; the logit function is $\\log \frac{p}{1-p}$"),
+                             withMathJax(),
+                             h6("Basic logistic regression models success probability using the following formula:"),
+                             helpText('\\(P(success|yards)=\\) \\(\\frac{e\\^(\\beta_0+\\beta_1x)}{1+e\\^(\\beta_0+\\beta_1x)}\\)'),
+                             h6("The logit function can be used to obtain the log odds of getting a certain result; the logit function is \\(\\log\\frac{p}{1-p}\\)"),
+                             helpText('\\(\\log\\frac{p}{1-p}\\)'),
                              h6("We can recover the odds by exponentiating the log-odds result")
                              ),
                              br(),
@@ -327,7 +330,9 @@ dashboardPage(skin="black",
                              numericInput("scatPredAge1","Age Value For Prediction 1",value=18,min=17,max=130,step=1)
                                ),
                              column(6,
-                             selectizeInput("scatPred1c", "Select categorical variable value for prediction1", choices = uiOutput("predGLM")),
+                             selectizeInput("glmPred1c", "Select categorical variable value for prediction1", choices = uiOutput("GLMpred")),
+                             selectizeInput("glmPred2c", "Select categorical variable value for prediction1", choices = uiOutput("GLMpred")),
+                             selectizeInput("glmPred3c", "Select categorical variable value for prediction1", choices = uiOutput("GLMpred")),
                              tableOutput("glmTable")
                          )
                   )

@@ -11,7 +11,7 @@ library(lubridate)
 ################ Run ImportTable3.RMD prior to running app ################ 
 
 #Alternately, code from this import file is shown below (lines 12-205); shiny app server code starts on line 215 of this document.
-voterMeck <- read_csv(file = "C:\\Users\\Valued User\\Documents\\CJ Class\\FinalProj\\voterMeckCo.csv")
+voterMeck <- read_csv(file = "./VoterMeckCo.csv")
 
 #create copy of original dataset as a backup
 origData <- voterMeck
@@ -78,11 +78,6 @@ eDateMin25 <- lapply(eDate, function(x) {
 voterMeck$registr_dt <- as.Date(as.character(voterMeck$registr_dt))
 voterMeck[,dates] = apply(voterMeck[,dates], 2, function(x) as.POSIXct(x, format = "%m/%d/%Y"))
 
-for (i in 1:20) {
-   voterMeck <- mutate(voterMeck, elecNames[i] = 
-                          ifelse(!is.na(dates[i]), 1,
-                                 ifelse(is.na(dates[i]) & registr_dt <= as.Date(eDateMin25[[1]]), 0, NA)))
-}
 
 #voterMeck <- mutate(voterMeck, E1_20191008 = 0)
 voterMeck <- mutate(voterMeck, E1_20191008 = 
@@ -171,7 +166,7 @@ table(voterMeck$ageCat, exclude = NULL)
 
 voterMeck$ageCat <- as.factor(voterMeck$ageCat)
 voterMeck$precinct_desc <- as.factor(voterMeck$precinct_desc)
-voterMeck$race_code <- as.factor(test$race_code)
+voterMeck$race_code <- as.factor(voterMeck$race_code)
 voterMeck$party_cd <- as.factor(voterMeck$party_cd)
 voterMeck$ethnic_code <- as.factor(voterMeck$ethnic_code)
 voterMeck$sex_code <- as.factor(voterMeck$sex_code)
@@ -206,7 +201,7 @@ voterMeck$E18_VotingMethod <- as.factor(voterMeck$E18_VotingMethod)
 voterMeck$E19_VotingMethod <- as.factor(voterMeck$E19_VotingMethod)
 voterMeck$E20_VotingMethod <- as.factor(voterMeck$E20_VotingMethod)
 
-definitions <- read_excel("C:\\Users\\Valued User\\Documents\\CJ Class\\FinalProj\\definitions.xlsx")
+definitions <- read_excel("./definitions.xlsx")
 
 
 #create lists for categorical and qunatitative variables
@@ -220,39 +215,27 @@ shinyServer(function(input, output, session) {
     h1("Mecklenburg County Voter Information and Election History")
   })
   
-  
+  #Create definitions table
+  getDefs <- reactive({
+    newDefs <- definitions   
+  })
+  output$definitions <- renderTable({
+    getDefs()
+  })
 
   #Create Conditions for including inactive voters
   getData <- reactive({
-    if (input$status) {
-      newData <- voterMeck %>% 
-        select(-(23:103))  
-    } else {
-      newData <- voterMeck %>% filter(status_cd == "A") %>% 
-        select(-(23:103))   
-    }
-    return(newData)
+    newData <- voterMeck %>% filter(status_cd == "A") %>% 
+    select(-(23:103))   
   })
   
   getDataMelt <- reactive({
-    if (input$status) {
-      newDataMelt <- voterMeck %>% 
-        select(-(23:103)) %>%
-        melt(id = c(1:22, 43:46)) %>% 
-        group_by(variable)
-    } else {
-      newDataMelt <- voterMeck %>% filter(status_cd == "A") %>% 
-        select(-(23:103)) %>%
-        melt(id = c(1:22, 43:46))  %>% 
-        group_by(variable)  
-    }
-    return(newDataMelt)
+    newDataMelt <- voterMeck %>% filter(status_cd == "A") %>% 
+    select(-(23:103)) %>%
+    melt(id = c(1:22, 43:46))  %>% 
+    group_by(variable)
   })
-  
-  getData <- reactive({
-    newData <- voterMeck %>% filter(voterMeck$status_cd == "A")
-  })
-  
+
   #create plot for single categorical variables
   #elections over time
    output$plotTime1c <- renderPlot({
@@ -268,11 +251,10 @@ shinyServer(function(input, output, session) {
    
    #create frequency tables for exploratory analyses
    #1 categorical variable
-   getData1c <- reactive({
-     newData1c <- table(input$catVar1)
-   })
+
    output$table1c <- renderDataTable({
-     getDatalc()
+      newData <- getData() 
+      newData %>% table(input$catVar1)
    })  
    
    #create frequency tables for exploratory analyses
@@ -441,7 +423,7 @@ output$biplot<- renderPlot({
 #Logistic Regression
 
 #Voting by Age for Last Presidential Election (November 8, 2016)
-#Color-coded by <RACE>
+#Color-coded by categorical variable
 output$jitPres16 <- renderPlot({
    newData <- getData()
    p2 <- ggplot(newData, aes(x = age, y = E8_20161108, color = input$jitVar16))  
@@ -478,13 +460,13 @@ output$scatAllLn <- renderPlot({
 })
 
 #predict probability of voting for given age in combination with second categorical predictor variable
-output$glmTable <- renderDataTable({
+output$glmTable <- renderTable({
    newData <- getData()
    glmFit <- glm(E8_20161108 ~ age + input$predGLM, data = newData, family = "binomial")
-   predict(glmFit, newdata = data.frame(age = c(scatPredAge1, scatPredAge2, scatPredAge3), input$scatVarC = c(input$scatPred1c, scatPred2c, scatPred3c)), type = "response", se.fit = TRUE)
+   predict(glmFit, newdata = data.frame(age = c(input$glmPredAge1, input$glmPredAge2, input$glmPredAge3), input$predGLM = c(input$glmPred1c, input$glmPred2c, input$glmPred3c)), type = "response", se.fit = TRUE)
 })
 
-output$predGLM <- renderUI({
+output$GLMpred <- renderUI({
    unlist(levels(as.factor(input$predGLM)))
 })
    
