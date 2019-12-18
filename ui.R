@@ -2,6 +2,7 @@ library(shiny)
 library(shinydashboard)
 library(DT)
 library(ggplot2)
+library(plotly)
 
 # Define UI for application that displays an about page and the app itself
 
@@ -149,45 +150,36 @@ dashboardPage(skin="black",
               )#column
         )#fluid
 ),#tabitem
+
     #define the body of the "explore" section
         # Second tab content
       tabItem(tabName = "explore",
               h3("Exploratory Analysis: Summary Graphs and Tables"),
-            fluidRow(
               h4("In each of the variable sections below, select variable options to view basic graphs and/or tables summarizing the data."),
-              column(7,
-                     plotOutput("plotTime1c", dblclick = "plot_dblclick")
-              ),
               br(),
-              column(5,
               tabsetPanel(
                 tabPanel("1 Variable",
                   tabsetPanel(
                       tabPanel("Categorical",
                                selectizeInput("catVar1", "Select Variable For Analysis", selected = "party_cd", choices = catVars),
-                               plotOutput("plotTime1a", dblclick = "plot_dblclick"),
-                               plotOutput("plot1c"),
-                               dataTableOutput("table1c"),
-                               h4("Observations associated with manually selected data"),
-                               tableOutput("data_dblclick")
-                               ),
+                               plotlyOutput("plotTime1c"),
+                               plotlyOutput("plot1c"),
+                               dataTableOutput("table")
+                      ),
                        tabPanel("Quantitative",
-                               fluidRow(
                                  selectizeInput("quantVar1", "Select Variable For Analysis", selected = "age", choices = quantVars),
-                                 plotOutput("box1q", dblclick = "plot_dblclick")),
-                                 plotOutput("hist1q", dblclick = "plot_dblclick")),
-                                 h4("Observations associated with manually selected data"),
-                               tableOutput("plot_dblclickh"),
-                               h4("Frequency table for selected variable")
-                      )
+                                 plotlyOutput("hist1q")
+                               )
+                      )#end set
                 ), #end tab panel
+                
                 tabPanel("2 Variables", 
                   tabsetPanel(
                          tabPanel("Categorical",
                                   fluidRow(
-                                    selectizeInput("expCatVar2a", "Select Variable For Analysis", choices = catVars),
-                                    selectizeInput("expCatVar2b", "Select Variable For Analysis", choices = catVars),
-                                    plotOutput("plot2c"),
+                                    selectizeInput("CatVar2a", "Select Variable For Analysis", choices = catVars),
+                                    selectizeInput("CatVar2b", "Select Variable For Analysis", choices = catVars),
+                                    plotlyOutput("plot2c"),
                                     dataTableOutput("table2c")
                                   )                
                          ),
@@ -195,14 +187,15 @@ dashboardPage(skin="black",
                                   fluidRow(
                                     selectizeInput("expQuantVar2a", "Select Variable For Analysis", choices = quantVars),
                                     selectizeInput("expQuantVar2b", "Select Variable For Analysis", choices = quantVars),
-                                    plotOutput("scat2q")
+                                    plotlyOutput("scat2q")
                                   )
                          ),
                          tabPanel("Combination",
                                   fluidRow(
                                     selectizeInput("expCombVar2a", "Select Categorical Variable For Analysis", choices = catVars),
                                     selectizeInput("expCombVar2b", "Select Quantitative Variable For Analysis", choices = quantVars),
-                                    plotOutput("combo2")
+                                    plotlyOutput("combo2"),
+                                    plotlyOutput("box1qc")
                                   )
                          )
                 ) #end tab panel set
@@ -211,37 +204,29 @@ dashboardPage(skin="black",
                 tabPanel("3 Variables", 
                   tabsetPanel(
                            tabPanel("Categorical",
-                                    fluidRow(
                                       selectizeInput("expCatVar3a", "Select Variable For Analysis", choices = catVars),
                                       selectizeInput("expCatVar3b", "Select Variable For Analysis", choices = catVars),
                                       selectizeInput("expCatVar3c", "Select Variable For Analysis", choices = catVars),
-                                      plotOutput("plot3c"),
+                                      plotlyOutput("plot3c"),
                                       dataTableOutput("table3c")
-                                    )                
                            ),
                            tabPanel("Combination",
                                 tabsetPanel(
                                   tabPanel("1 categorical, 2 quantitative",
-                                    fluidRow(
                                          selectizeInput("expCombVar4q1", "Select Quantitative Variable For Analysis", choices = quantVars),
                                          selectizeInput("expCombVar4q2", "Select Quantitative Variable For Analysis", choices = quantVars),
                                          selectizeInput("expCombVar4c1", "Select Categorical Variable For Analysis", choices = catVars),
-                                         plotOutput("Combo3")
-                                                 )#fluid
+                                         plotlyOutput("Combo3")
                                         )#tabpanel
                                       )#tabset
                            )#end tabPanel
                          ) #end tabsetPanel
                 ) #end tab panel
               ) #end tabsetPanel
-            ) # end column
-            ) #end fluid row
               ),
 
         tabItem(tabName = "investigate",
-            fluidRow(
               h1("Principal Components Analysis"),
-              column(3,
                        box(width=12,title="selection Options",
                            br(),
                            h4("Paired Plots for quantitative variables"),
@@ -256,10 +241,8 @@ dashboardPage(skin="black",
                            h4("Biplot Inputs (select 2 principal components to plot)"),
                            numericInput("selPc1", "Select Principal Component Number (x-axis).", value = 1, min = 1, max = 6, step = 1),
                            numericInput("selPc2", "Select Principal Component Number (y-axis).",  value = 2, min = 1, max = 6, step = 1)
-                       )
-                ), 
+                       ),
                 #Show a plot of the prior entries    
-                column(9,
                        plotOutput("pairs"),
                        br(),
                        h4("Principal Components Analysis"),
@@ -272,8 +255,6 @@ dashboardPage(skin="black",
                        h4("Biplot of Select Principal Components Analyses"),
                        h6("Select principal components to plot, then look for any variables shown on the plot that appear further for the center (0,0) axes both horizontally and vertically (respectively representing each of the two principal components chosen in order of selection below)."),
                        plotOutput("biplot")
-                ) #end column
-              ) #end fluidrow
       ), #end tabItem
 
 
@@ -308,6 +289,7 @@ dashboardPage(skin="black",
                              "),
                              br(),
                              selectizeInput("scatVarQ", "Select quantitative variable For Color-coding of output plot", selected = "age", choices = quantVars),
+                         selectizeInput("scatVarC", "Select quantitative variable For Color-coding of output plot", selected = "party_cd", choices = catVars),
                              br(),
                              h4("Proportion of Overall Voting by Selected Quantitative Variable"),
                              plotOutput("scatAll"),
@@ -346,11 +328,10 @@ dashboardPage(skin="black",
                   column(12,
                          #Description of Data
                          h2("Data used in this analysis"),
-                         plotOutput("plotTime", dblclick = "plot_dblclick"),
                          dataTableOutput("table")
                 )
         )
-        )
+        ) #end data tab item
         ) #end tabItems
     ) #end dashboard body
 )

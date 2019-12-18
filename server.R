@@ -1,6 +1,7 @@
 library(shiny)
 library(dplyr)
 library(ggplot2)
+library(plotly)
 library(rgl)
 library(readxl)
 library(reshape2)
@@ -76,8 +77,6 @@ eDateMin25 <- lapply(eDate, function(x) {
 
 # Change class of date columns as appropriate:
 voterMeck$registr_dt <- as.Date(as.character(voterMeck$registr_dt))
-voterMeck[,dates] = apply(voterMeck[,dates], 2, function(x) as.POSIXct(x, format = "%m/%d/%Y"))
-
 
 #voterMeck <- mutate(voterMeck, E1_20191008 = 0)
 voterMeck <- mutate(voterMeck, E1_20191008 = 
@@ -201,12 +200,22 @@ voterMeck$E18_VotingMethod <- as.factor(voterMeck$E18_VotingMethod)
 voterMeck$E19_VotingMethod <- as.factor(voterMeck$E19_VotingMethod)
 voterMeck$E20_VotingMethod <- as.factor(voterMeck$E20_VotingMethod)
 
+
 definitions <- read_excel("./definitions.xlsx")
 
 
-#create lists for categorical and qunatitative variables
+#create lists for categorical and quantitative variables
 catVars <- c(names(voterMeck[,1:5]), names(voterMeck[,7:9]), names(voterMeck[,12:22]), names(voterMeck[,127]))
 quantVars <- c(names(voterMeck[, 6]), names(voterMeck[, 104:126]))
+
+voterMeltYr <- voterMeck %>% filter(status_cd == "A") %>% 
+                             select(-(23:103)) %>% 
+                             select(-voter_reg_num) %>% 
+                             melt(id = c(1:21, 42:45)) 
+
+voterMeck <- voterMeck %>% filter(status_cd == "A") %>% 
+                             select(-(23:103)) %>% select(-voter_reg_num)
+
 
 
 shinyServer(function(input, output, session) {
@@ -224,39 +233,32 @@ shinyServer(function(input, output, session) {
   })
 
   #Create Conditions for including inactive voters
-  getData <- reactive({
-    newData <- voterMeck %>% filter(status_cd == "A") %>% 
-    select(-(23:103))   
-  })
-  
+
   getDataMelt <- reactive({
     newDataMelt <- voterMeck %>% filter(status_cd == "A") %>% 
     select(-(23:103)) %>%
     melt(id = c(1:22, 43:46))  %>% 
     group_by(variable)
   })
-
+  getData <- reactive({
+    newData <- voterMeck %>% filter(status_cd == "A") %>% 
+      select(-(23:103))   
+  })
+  
   #create plot for single categorical variables
   #elections over time
-   output$plotTime1c <- renderPlot({
-    #get filtered data
+   output$plotTime1c <- renderPlotly({
     newDataMelt <- getDataMelt()
-    g <- ggplot(newDataMelt, aes(x = variable, y = value))
-    g + geom_bar(stat = "identity",  aes(fill = input$catVar1)) +
+    t <- ggplot(newDataMelt, aes(x = input$catVar1, y = value)) + 
+      geom_bar(stat = "identity",  aes(fill = input$catVar1)) +
       theme(legend.position = "bottom", axis.text.x = element_text(face = "bold", angle = 80, size = 8)) +
       scale_x_discrete(labels=elecList)
+    ggplotly(t)
   })
 
    
-   
-   #create frequency tables for exploratory analyses
-   #1 categorical variable
+  
 
-   output$table1c <- renderDataTable({
-      newData <- getData() 
-      newData %>% table(input$catVar1)
-   })  
-   
    #create frequency tables for exploratory analyses
    #2 categorical variables
    getData2c <- reactive({
@@ -269,7 +271,7 @@ shinyServer(function(input, output, session) {
    #create frequency tables for exploratory analyses
    #3 categorical variables
    getData3c <- reactive({
-     newData3c <- table(input$catVar1, input$catVar2, input4catVar3)
+     newData3c <- table(input$catVar1, input$catVar2, input$catVar3)
    })
    output$table3c <- renderDataTable({
      getData3c()
@@ -278,90 +280,96 @@ shinyServer(function(input, output, session) {
 #QUALITATIVE EXPLORATION   
    #create plots for categorical variables
    # 1 categorical variable
-   output$plot1c <- renderPlot({
+   output$plot1c <- renderPlotly({
      #get filtered data
      newData <- getData()
-     g <- ggplot(newData, aes(x = input$catVar1, y = value))
-     g + geom_bar(stat = "identity") +
+     c1 <- ggplot(newData, aes(x = input$catVar1)) +
+       geom_bar(stat = "count") +
        theme(legend.position = "bottom", axis.text.x = element_text(face = "bold", angle = 45, size = 8))
+     ggplotly(c1)
    })
    
    # 2 categorical variables
-   output$plot2c <- renderPlot({
+   output$plot2c <- renderPlotly({
      #get filtered data
      newData <- getData()
-     g <- ggplot(newData, aes(x = input$catVar1, y = value))
-     g + geom_bar(stat = "identity", aes(fill = input$catVar1)) +
+     c2 <- ggplot(newData, aes(x = input$CatVar1, y = input$CatVar2)) +
+       geom_bar(stat = "identity", aes(fill = input$catVar1)) +
        theme(legend.position = "bottom", axis.text.x = element_text(face = "bold", angle = 45, size = 8))
+     ggplotly(c2)
    })
    
    # 3 categorical variables
-   output$plot3c <- renderPlot({
+   output$plot3c <- renderPlotly({
      #get filtered data
      newData <- getData()
-     g <- ggplot(newData, aes(x = input$catVar1, y = value))
-     g + geom_bar(stat = "identity", aes(fill = input$catVar1)) +
-       theme(legend.position = "bottom", axis.text.x = element_text(face = "bold", angle = 45, size = 8)) +
-       facet_grid(.~input$catVar3, labeller = label_both)
+     c3 <- ggplot(newData, aes(x = input$catVar1, y = totVotes)) +
+       geom_bar(stat = "identity", aes(fill = input$catVar1)) +
+       theme(legend.position = "bottom", axis.text.x = element_text(face = "bold", angle = 45, size = 8))
+     ggplotly(c3)
    })
 
 
 #QUANTITATIVE EXPLORATION
 
    #create plots for quantitative variables
-   # 1 quantitative variable
-   output$box1q <- renderPlot({
+   # 1 quantitative variable and 1 Categorical Variable
+   output$box1qc <- renderPlotly({
      #get filtered data
      newData <- getData()
-     p2 <- ggplot(newData, aes(x = input$quantVar1, y = input$quantVar2))
-     p2 + geom_boxplot() +
-       geom_point(aes(group = input$quantVar1, color = input$quantVar1)) +
-       labs(title = "Boxplot for Select Quantitative Variable")
+     qc1 <- ggplot(newData, aes(x = input$quantVar1, y = input$quantVar2)) +
+       geom_boxplot() +
+       labs(title = "Boxplot for Select Quantitative Variable (Grouped by Categorical Variable)")
+     ggplotly(qc1)
    })
    
-   output$hist1q <- renderPlot({
+   output$hist1q <- renderPlotly({
      #get filtered data
      newData <- getData()
-       d1 <- ggplot(newData, aes(x = input$quantVar1)) 
-     d1 + geom_histogram(bins = 20, aes(y = ..density..)) + 
-       geom_density(adjust = 0.40, size = 3, col = "Red") +
-       labs(title = "Histogram for Select Quantitative Variable")
+       h1 <- ggplot(newData, aes(x = input$quantVar1)) +
+          geom_histogram(bins = 20, aes(y = ..density..)) + 
+          geom_density(adjust = 0.40, size = 3, col = "Red") +
+          labs(title = "Histogram for Select Quantitative Variable")
+      ggplotly(h1)
    })
    
    
    # 2 quantitative variables
-   output$scat2q <- renderPlot({
+   output$scat2q <- renderPlotly({
      #get filtered data
      newData <- getData()
-     p2 <- ggplot(newData, aes(x = input$quantVar1, y = input$quantVar2))
-        p2 + geom_boxplot() +
+     s2 <- ggplot(newData, aes(x = input$quantVar1, y = input$quantVar2)) +
         geom_point(aes(group = input$quantVar1, color = input$quantVar1)) +
         labs(title = "Boxplot/Scatter Plots for Select Quantitative Variables in Combination")
+     ggplotly(s2)
    })
+
+
  #VARIABLE COMBNINATONS
   #combination categorical and quantitative variables
    
    
    #1 quantitative/1 categorical variable
-   output$combo2 <- renderPlot({
+   output$combo2 <- renderPlotly({
      #get filtered data
      newData <- getData()
-     d1 <- ggplot(newData, aes(x = input$quantVar1)) 
-     d1 + geom_histogram(bins = 20, aes(y = ..density..)) + 
+     cb2 <- ggplot(newData, aes(x = input$quantVar1)) +
+       geom_histogram(bins = 20, aes(y = ..density..)) + 
        geom_density(adjust = 0.40, size = 3, col = "Red") +
        labs(title = "Histograms for Select Variables in Combination") +
        facet_grid(.~input$catVar1, labeller = label_both)
+     ggplotly(cb2)
         })
  
    #2 quant./1 cat.
-   output$combo3 <- renderPlot({
+   output$combo3 <- renderPlotly({
      #get filtered data
      newData <- getData()
-     p2 <- ggplot(newData, aes(x = input$quantVar1, y = input$quantVar2))
-     p2 + geom_boxplot() +
-       geom_point(aes(group = input$quantVar1, color = input$quantVar1), position = "jitter") +
+     cb3 <- ggplot(newData, aes(x = input$quantVar1, y = input$quantVar2)) +
+       geom_boxplot() +
        labs(title = "Boxplots for Select Variables in Combination") +
        facet_grid(.~input$catVar1, labeller = label_both)
+     ggplotly(cb3)
    })
    
   #PRINCIPAL COMPONENTS
@@ -370,8 +378,8 @@ shinyServer(function(input, output, session) {
    output$pairs <- renderPlot({
       #get filtered data
       newData <- getData()
-      newDataPR <- select(newData, pcVarq1, pcVarq2, pcVarq3, pcVarq4, pcVarq5, pcVarq6) %>%
-      `[`(rowSums(is.na(.)) == 0, )
+      newDataPR <- select(newData, input$pcVarq1, input$pcVarq2, input$pcVarq3, input$pcVarq4, input$pcVarq5, input$pcVarq6) %>%
+      `[`(rowSums(is.na(.)) == 0)
    pairs(newDataPR, cex = 0.4) #numeric vars only, remove nas
 })
    
@@ -380,8 +388,8 @@ shinyServer(function(input, output, session) {
  #princ. components analysis
    getDataPCs <- reactive({
       newData <- getData()
-      newDataPC <- select(newData, pcVarq1, pcVarq2, pcVarq3, pcVarq4, pcVarq5, pcVarq6) %>%
-      `[`(rowSums(is.na(.)) == 0, )
+      newDataPC <- select(newData, input$pcVarq1, input$pcVarq2, input$pcVarq3, input$pcVarq4, input$pcVarq5, input$pcVarq6) %>%
+      `[`(rowSums(is.na(.)) == 0)
      newDataPC <- prcomp(newDataPC, center = TRUE, scale = TRUE)
    })
    
@@ -409,15 +417,6 @@ output$biplot<- renderPlot({
 })
    
 
-#HEIRARCHICAL CLUSTER ANALYSIS (with dendogram)
-###################################
-###################################
-###################################
-###################################
-###################################
-###################################
-###################################
-
 
 #SUPERVISED LEARNING
 #Logistic Regression
@@ -426,8 +425,8 @@ output$biplot<- renderPlot({
 #Color-coded by categorical variable
 output$jitPres16 <- renderPlot({
    newData <- getData()
-   p2 <- ggplot(newData, aes(x = age, y = E8_20161108, color = input$jitVar16))  
-   p2 + geom_jitter(mapping = NULL, data = voterActive, stat = "identity",
+   p2 <- ggplot(newData, aes(x = age, y = E8_20161108, color = input$jitVar16)) + 
+       geom_jitter(mapping = NULL, data = voterMeck, stat = "identity",
                  width = .05, height = .1,
                  na.rm = FALSE, show.legend = NA, inherit.aes = TRUE)
 })
@@ -438,7 +437,7 @@ output$jitPres16 <- renderPlot({
 #Proportion of Overall Voting by Selected Quantitative Variable
 output$scatAll <- renderPlot({
    newData <- getData()
-   distSum <- newData %>% filter(!is.na(E8_20161108)) %>% group_by(input$scatVarQ) %>% summarize(propVoted = mean(E8_20161108), n = n())
+   distSum <- newData %>% filter(!is.na(newData$E8_20161108)) %>% group_by(input$scatVarQ) %>% summarize(propVoted = mean(newData$E8_20161108), n = n())
    ggplot(distSum, aes(x = input$scatVarQ, y = propVoted, size = n)) + 
       geom_point(stat = "identity")
 })
@@ -446,7 +445,7 @@ output$scatAll <- renderPlot({
 #Proportion of Overall Voting by Selected Quantitative Variable Squared
 output$scatAllSq <- renderPlot({
    newData <- getData()
-   distSum <- newData %>% filter(!is.na(E8_20161108)) %>% group_by(input$scatVarQ) %>% summarize(propVoted = mean(E8_20161108), n = n())
+   distSum <- newData %>% filter(!is.na(newData$E8_20161108)) %>% group_by(input$scatVarQ) %>% summarize(propVoted = mean(newData$E8_20161108), n = n())
    ggplot(distSum, aes(x = input$scatVarQ^2, y = propVoted, size = n)) + 
       geom_point(stat = "identity")
 })
@@ -454,22 +453,37 @@ output$scatAllSq <- renderPlot({
 #Proportion of Overall Voting by the Natural Log of Selected Quantitative Variable 
 output$scatAllLn <- renderPlot({
    newData <- getData()
-   distSum <- newData %>% filter(!is.na(E8_20161108)) %>% group_by(input$scatVarQ) %>% summarize(propVoted = mean(E8_20161108), n = n())
+   distSum <- newData %>% filter(!is.na(newData$E8_20161108)) %>% group_by(input$scatVarQ) %>% summarize(propVoted = mean(newData$E8_20161108), n = n())
    ggplot(distSum, aes(x = log(input$scatVarQ), y = propVoted, size = n)) + 
       geom_point(stat = "identity")
 })
 
 #predict probability of voting for given age in combination with second categorical predictor variable
 output$glmTable <- renderTable({
-   newData <- getData()
-   glmFit <- glm(E8_20161108 ~ age + input$predGLM, data = newData, family = "binomial")
-   predict(glmFit, newdata = data.frame(age = c(input$glmPredAge1, input$glmPredAge2, input$glmPredAge3), input$predGLM = c(input$glmPred1c, input$glmPred2c, input$glmPred3c)), type = "response", se.fit = TRUE)
+  newData <- getData()
+  glmFit <- glm(E8_20161108 ~ age + input$predGLM, data = newData, family = "binomial")
+  predict(glmFit, newdata = data.frame(age = c(input$glmPredAge1, input$glmPredAge2, input$glmPredAge3), input$predGLM = c(input$glmPred1c, input$glmPred2c, input$glmPred3c)), type = "response", se.fit = TRUE)
+})
+
+#predict log odds for given yards
+output$glmLogOdds <- renderTable({
+  newData <- getData()
+  glmFitLogO <- glm(E8_20161108 ~ age + input$predGLM, data = newData, family = "binomial")
+  predict(glmFit, newdata = data.frame(age = c(input$glmPredAge1, input$glmPredAge2, input$glmPredAge3), input$predGLM = c(input$glmPred1c, input$glmPred2c, input$glmPred3c)), type = "link")
+})
+
+#predict odds for given yards
+output$glmOdds <- renderTable({
+  newData <- getData()
+  glmFitOdds <- glm(E8_20161108 ~ age + input$predGLM, data = newData, family = "binomial")
+  exp(predict(glmFit, newdata = data.frame(age = c(input$glmPredAge1, input$glmPredAge2, input$glmPredAge3), input$predGLM = c(input$glmPred1c, input$glmPred2c, input$glmPred3c)), type = "link"))
 })
 
 output$GLMpred <- renderUI({
-   unlist(levels(as.factor(input$predGLM)))
+  unlist(levels(as.factor(input$predGLM)))
 })
-   
+
+
    
    #DATA TABLE INFORMATION
    #create output table for full set of observations    
